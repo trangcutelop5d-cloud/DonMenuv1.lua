@@ -1,8 +1,7 @@
 -- =================================================================
--- ⚡ QUANTUM HUB - FULL ESP EDITION (BOX, LINE, NAME, DISTANCE)
+-- ⚡ QUANTUM HUB - FF HEADSHOT AIM + CUSTOM CONFIG UI
 -- =================================================================
 
--- 1. DỌN DẸP TOÀN BỘ GIAO DIỆN CŨ
 pcall(function()
     for _, v in pairs(game:GetService("CoreGui"):GetChildren()) do
         if v.Name:find("Quantum") or v.Name:find("DonMenu") then
@@ -14,6 +13,7 @@ end)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
 local Camera = workspace.CurrentCamera
 
 local LocalPlayer = Players.LocalPlayer
@@ -25,37 +25,42 @@ end
 local function Notify(text)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
-            Title = "Quantum Hub",
+            Title = "Quantum Hub - Config",
             Text = text,
             Duration = 2.5
         })
     end)
 end
 
-Notify("Đang khởi động hệ thống Full ESP...")
+Notify("Đã khởi chạy hệ thống tùy chỉnh thông số!")
 
--- 2. CẤU HÌNH HỆ THỐNG
 getgenv().QuantumSettings = {
-    -- ESP Toggles
-    ESPEnabled = false,
+    -- ESP
+    ESPEnabled = true,
     BoxESP = true,
     LineESP = true,
     NameESP = true,
     DistanceESP = true,
     
-    -- Aim & Misc
-    AimLock = false,
+    -- XG (Xuyên tường)
+    Noclip = false,
+    AutoFarm = false,
+    
+    -- Free Fire Headshot Assist & Custom Values
+    HeadshotAssist = false,
     Prediction = true,
-    PredictionValue = 0.15,
-    FOVRadius = 150,
+    PredictionValue = 0.12,  -- Có thể chỉnh sửa
+    FOVRadius = 180,         -- Có thể chỉnh sửa
+    Smoothness = 0.25,       -- Độ mượt kéo tâm đầu (Có thể chỉnh sửa)
     ShowFOV = true,
+    
+    -- Misc
     SpeedHack = false,
     SpeedVal = 50,
-    Noclip = false,
 }
 local Config = getgenv().QuantumSettings
 
--- 3. HỆ THỐNG ESP DRAWING STORAGE
+-- Kho lưu trữ Drawing ESP
 local ESPStorage = {}
 
 local function RemoveESP(player)
@@ -77,45 +82,40 @@ local function CreateESP(player)
         Distance = Drawing.new("Text")
     }
     
-    -- Cấu hình Box
     drawings.Box.Visible = false
     drawings.Box.Thickness = 1.5
-    drawings.Box.Color = Color3.fromRGB(0, 255, 200)
+    drawings.Box.Color = Color3.fromRGB(255, 50, 50)
     drawings.Box.Filled = false
     
-    -- Cấu hình Line (Thẻ kẻ từ giữa màn hình đáy lên nhân vật)
     drawings.Line.Visible = false
     drawings.Line.Thickness = 1
-    drawings.Line.Color = Color3.fromRGB(0, 255, 200)
+    drawings.Line.Color = Color3.fromRGB(255, 50, 50)
     
-    -- Cấu hình Tên
     drawings.Name.Visible = false
     drawings.Name.Size = 13
     drawings.Name.Center = true
     drawings.Name.Outline = true
     drawings.Name.Color = Color3.fromRGB(255, 255, 255)
     
-    -- Cấu hình Khoảng cách
     drawings.Distance.Visible = false
     drawings.Distance.Size = 12
     drawings.Distance.Center = true
     drawings.Distance.Outline = true
-    drawings.Distance.Color = Color3.fromRGB(0, 255, 200)
+    drawings.Distance.Color = Color3.fromRGB(255, 50, 50)
     
     ESPStorage[player] = drawings
 end
 
--- Xóa ESP khi người chơi rời game
 Players.PlayerRemoving:Connect(function(player)
     RemoveESP(player)
 end)
 
--- 4. VÒNG TRÒN FOV
+-- Vòng tròn FOV
 local FOVCircle = nil
 pcall(function()
     if Drawing and Drawing.new then
         FOVCircle = Drawing.new("Circle")
-        FOVCircle.Color = Color3.fromRGB(0, 255, 200)
+        FOVCircle.Color = Color3.fromRGB(255, 50, 50)
         FOVCircle.Thickness = 1.5
         FOVCircle.NumSides = 32
         FOVCircle.Radius = Config.FOVRadius
@@ -124,23 +124,22 @@ pcall(function()
     end
 end)
 
--- 5. XÂY DỰNG GIAO DIỆN (UI)
+-- Giao diện UI
 local CoreGui = game:GetService("CoreGui")
 local TargetParent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or CoreGui
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "QuantumHub_FullESP"
+ScreenGui.Name = "QuantumHub_Config"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = TargetParent
 
--- Nút mở/đóng menu
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
 ToggleBtn.Position = UDim2.new(0, 15, 0.3, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-ToggleBtn.Text = "⚡"
-ToggleBtn.TextColor3 = Color3.fromRGB(0, 255, 200)
+ToggleBtn.Text = "⚙️"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
 ToggleBtn.TextSize = 22
 ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.Active = true
@@ -149,23 +148,21 @@ ToggleBtn.Parent = ScreenGui
 
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
 local BtnStroke = Instance.new("UIStroke", ToggleBtn)
-BtnStroke.Color = Color3.fromRGB(0, 255, 200)
+BtnStroke.Color = Color3.fromRGB(255, 50, 50)
 BtnStroke.Thickness = 2
 
--- Khung Menu Chính
 local MainWindow = Instance.new("Frame")
-MainWindow.Size = UDim2.new(0, 480, 0, 310)
-MainWindow.Position = UDim2.new(0.5, -240, 0.5, -155)
+MainWindow.Size = UDim2.new(0, 490, 0, 330)
+MainWindow.Position = UDim2.new(0.5, -245, 0.5, -165)
 MainWindow.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
 MainWindow.Visible = true
 MainWindow.Parent = ScreenGui
 
 Instance.new("UICorner", MainWindow).CornerRadius = UDim.new(0, 8)
 local MainStroke = Instance.new("UIStroke", MainWindow)
-MainStroke.Color = Color3.fromRGB(0, 255, 200)
+MainStroke.Color = Color3.fromRGB(255, 50, 50)
 MainStroke.Thickness = 1.5
 
--- Thanh Tiêu Đề
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 34)
 Header.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
@@ -176,7 +173,7 @@ local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, -15, 1, 0)
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "QUANTUM HUB • FULL ESP EDITION"
+TitleLabel.Text = "QUANTUM HUB • TÙY CHỈNH THÔNG SỐ"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 11
 TitleLabel.Font = Enum.Font.GothamBold
@@ -187,7 +184,6 @@ ToggleBtn.MouseButton1Click:Connect(function()
     MainWindow.Visible = not MainWindow.Visible
 end)
 
--- Sidebar
 local Sidebar = Instance.new("ScrollingFrame")
 Sidebar.Size = UDim2.new(0, 120, 1, -44)
 Sidebar.Position = UDim2.new(0, 6, 0, 38)
@@ -199,7 +195,6 @@ local SidebarList = Instance.new("UIListLayout", Sidebar)
 SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
 SidebarList.Padding = UDim.new(0, 5)
 
--- Content Area
 local ContentArea = Instance.new("Frame")
 ContentArea.Size = UDim2.new(1, -134, 1, -44)
 ContentArea.Position = UDim2.new(0, 130, 0, 38)
@@ -239,7 +234,7 @@ local function MakeTab(tabTitle)
             t.Button.TextColor3 = Color3.fromRGB(150, 150, 170)
         end
         TabContainer.Visible = true
-        TabBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
         TabBtn.TextColor3 = Color3.fromRGB(15, 15, 22)
     end)
 
@@ -254,8 +249,8 @@ local function MakeToggle(parentTab, labelText, configKey, defaultVal)
     if defaultVal ~= nil then Config[configKey] = defaultVal end
     
     local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Size = UDim2.new(1, -4, 0, 32)
-    ToggleButton.BackgroundColor3 = Config[configKey] and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(20, 20, 30)
+    ToggleButton.Size = UDim2.new(1, -4, 0, 30)
+    ToggleButton.BackgroundColor3 = Config[configKey] and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(20, 20, 30)
     ToggleButton.Text = "  " .. labelText .. (Config[configKey] and ": [ON]" or ": [OFF]")
     ToggleButton.TextColor3 = Config[configKey] and Color3.fromRGB(15, 15, 22) or Color3.fromRGB(180, 180, 200)
     ToggleButton.Font = Enum.Font.GothamSemibold
@@ -269,47 +264,118 @@ local function MakeToggle(parentTab, labelText, configKey, defaultVal)
         Config[configKey] = not Config[configKey]
         ToggleButton.Text = "  " .. labelText .. (Config[configKey] and ": [ON]" or ": [OFF]")
         ToggleButton.TextColor3 = Config[configKey] and Color3.fromRGB(15, 15, 22) or Color3.fromRGB(180, 180, 200)
-        ToggleButton.BackgroundColor3 = Config[configKey] and Color3.fromRGB(0, 255, 200) or Color3.fromRGB(20, 20, 30)
+        ToggleButton.BackgroundColor3 = Config[configKey] and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(20, 20, 30)
     end)
 end
 
--- TẠO CÁC TAB CHỨC NĂNG
-local ESPCategory = MakeTab("👁️ ESP Config")
+-- Hàm tạo mục tùy chỉnh thông số số học (Có nút Giảm [-] và Tăng [+])
+local function MakeSlider(parentTab, labelText, configKey, step, minVal, maxVal)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(1, -4, 0, 42)
+    Container.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    Container.Parent = parentTab
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 6)
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -90, 1, 0)
+    Label.Position = UDim2.new(0, 8, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = labelText .. ": " .. tostring(Config[configKey])
+    Label.TextColor3 = Color3.fromRGB(200, 200, 220)
+    Label.Font = Enum.Font.GothamSemibold
+    Label.TextSize = 11
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Container
+
+    local MinusBtn = Instance.new("TextButton")
+    MinusBtn.Size = UDim2.new(0, 35, 0, 26)
+    MinusBtn.Position = UDim2.new(1, -78, 0.5, -13)
+    MinusBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    MinusBtn.Text = "-"
+    MinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinusBtn.Font = Enum.Font.GothamBold
+    MinusBtn.TextSize = 14
+    MinusBtn.Parent = Container
+    Instance.new("UICorner", MinusBtn).CornerRadius = UDim.new(0, 4)
+
+    local PlusBtn = Instance.new("TextButton")
+    PlusBtn.Size = UDim2.new(0, 35, 0, 26)
+    PlusBtn.Position = UDim2.new(1, -39, 0.5, -13)
+    PlusBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    PlusBtn.Text = "+"
+    PlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    PlusBtn.Font = Enum.Font.GothamBold
+    PlusBtn.TextSize = 14
+    PlusBtn.Parent = Container
+    Instance.new("UICorner", PlusBtn).CornerRadius = UDim.new(0, 4)
+
+    MinusBtn.MouseButton1Click:Connect(function()
+        Config[configKey] = math.clamp(Config[configKey] - step, minVal, maxVal)
+        -- Làm tròn số thập phân tránh bị lệch số học lua
+        Config[configKey] = tonumber(string.format("%.2f", Config[configKey]))
+        Label.Text = labelText .. ": " .. tostring(Config[configKey])
+    end)
+
+    PlusBtn.MouseButton1Click:Connect(function()
+        Config[configKey] = math.clamp(Config[configKey] + step, minVal, maxVal)
+        Config[configKey] = tonumber(string.format("%.2f", Config[configKey]))
+        Label.Text = labelText .. ": " .. tostring(Config[configKey])
+    end)
+end
+
+-- Tạo các Tab chức năng và Bảng Chỉnh Thông Số
+local ESPCategory = MakeTab("👁️ ESP")
 MakeToggle(ESPCategory, "Bật/Tắt ESP", "ESPEnabled", true)
 MakeToggle(ESPCategory, "ESP Box", "BoxESP", true)
 MakeToggle(ESPCategory, "ESP Line", "LineESP", true)
 MakeToggle(ESPCategory, "ESP Name", "NameESP", true)
 MakeToggle(ESPCategory, "ESP Distance", "DistanceESP", true)
 
-local AimCategory = MakeTab("🎯 Aim Lock")
-MakeToggle(AimCategory, "Aim Lock Skill", "AimLock")
+local XGCategory = MakeTab("🧱 XG (Xuyên Tường)")
+MakeToggle(XGCategory, "Noclip Xuyên Tường", "Noclip", false)
+MakeToggle(XGCategory, "Hỗ Trợ Auto Farm XG", "AutoFarm", false)
+
+local AimCategory = MakeTab("🎯 FF Headshot")
+MakeToggle(AimCategory, "Kéo Tâm Đầu (FF)", "HeadshotAssist", false)
 MakeToggle(AimCategory, "Dự Đoán Đường Bay", "Prediction", true)
 MakeToggle(AimCategory, "Hiển Thị Vòng FOV", "ShowFOV", true)
 
-local MiscCategory = MakeTab("⚡ Player")
-MakeToggle(MiscCategory, "Speed Hack", "SpeedHack")
-MakeToggle(MiscCategory, "Noclip Xuyên Tường", "Noclip")
+-- Tab Chỉnh Thông Số Mới
+local ConfigCategory = MakeTab("⚙️ Chỉnh Thông Số")
+MakeSlider(ConfigCategory, "Bán kính FOV", "FOVRadius", 10, 50, 400)
+MakeSlider(ConfigCategory, "Độ mượt (Smooth)", "Smoothness", 0.05, 0.05, 1.0)
+MakeSlider(ConfigCategory, "Độ dự đoán (Pred)", "PredictionValue", 0.01, 0.0, 0.5)
 
 if FirstTabContent then
     FirstTabContent.Container.Visible = true
-    FirstTabContent.Button.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
+    FirstTabContent.Button.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
     FirstTabContent.Button.TextColor3 = Color3.fromRGB(15, 15, 22)
 end
 
--- 6. VÒNG LẶP RENDER CHÍNH (XỬ LÝ ESP, AIM, SPEED)
+local isFiring = false
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isFiring = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isFiring = false
+    end
+end)
+
 RunService.RenderStepped:Connect(function()
     pcall(function()
         Camera = workspace.CurrentCamera
         if not Camera then return end
 
-        -- Cập nhật FOV Circle
         if FOVCircle then
             FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
             FOVCircle.Radius = Config.FOVRadius
-            FOVCircle.Visible = Config.ShowFOV and Config.AimLock
+            FOVCircle.Visible = Config.ShowFOV and Config.HeadshotAssist
         end
 
-        -- Xử lý toàn bộ ESP cho Players
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer then
                 if Config.ESPEnabled and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChildOfClass("Humanoid") then
@@ -320,7 +386,6 @@ RunService.RenderStepped:Connect(function()
                     if hum.Health > 0 then
                         CreateESP(p)
                         local esp = ESPStorage[p]
-                        
                         local rootPos, rootOnScreen = Camera:WorldToViewportPoint(hrp.Position)
                         
                         if rootOnScreen then
@@ -331,7 +396,6 @@ RunService.RenderStepped:Connect(function()
                             local boxHeight = math.abs(topPos.Y - bottomPos.Y)
                             local boxWidth = boxHeight / 2
                             
-                            -- 1. Box ESP
                             if Config.BoxESP then
                                 esp.Box.Size = Vector2.new(boxWidth, boxHeight)
                                 esp.Box.Position = Vector2.new(rootPos.X - boxWidth / 2, topPos.Y)
@@ -340,7 +404,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.Box.Visible = false
                             end
                             
-                            -- 2. Line ESP (Kẻ từ giữa màn hình dưới lên nhân vật)
                             if Config.LineESP then
                                 esp.Line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
                                 esp.Line.To = Vector2.new(rootPos.X, bottomPos.Y)
@@ -349,7 +412,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.Line.Visible = false
                             end
                             
-                            -- 3. Name ESP
                             if Config.NameESP then
                                 esp.Name.Text = p.Name
                                 esp.Name.Position = Vector2.new(rootPos.X, topPos.Y - 16)
@@ -358,7 +420,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.Name.Visible = false
                             end
                             
-                            -- 4. Distance ESP
                             if Config.DistanceESP and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                                 local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
                                 esp.Distance.Text = "[" .. dist .. "m]"
@@ -368,7 +429,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.Distance.Visible = false
                             end
                         else
-                            -- Ẩn khi ra khỏi màn hình
                             for _, d in pairs(esp) do d.Visible = false end
                         end
                     else
@@ -380,50 +440,42 @@ RunService.RenderStepped:Connect(function()
             end
         end
 
-        -- Xử lý Aim Lock
-        if Config.AimLock then
-            local targetInstance = nil
+        -- Free Fire Headshot Assist ứng dụng thông số Smoothness tùy chỉnh
+        if Config.HeadshotAssist and isFiring then
+            local targetHead = nil
             local minDistance = Config.FOVRadius
 
             for _, p in ipairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer and p.Character then
-                    local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+                    local head = p.Character:FindFirstChild("Head")
                     local hum = p.Character:FindFirstChildOfClass("Humanoid")
-                    if hrp and hum and hum.Health > 0 then
-                        local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                    if head and hum and hum.Health > 0 then
+                        local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
                         if onScreen then
                             local mouseDist = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
                             if mouseDist < minDistance then
                                 minDistance = mouseDist
-                                targetInstance = hrp
+                                targetHead = head
                             end
                         end
                     end
                 end
             end
 
-            if targetInstance then
-                local finalPos = targetInstance.Position
+            if targetHead then
+                local headPos = targetHead.Position
                 if Config.Prediction then
-                    finalPos = finalPos + (targetInstance.Velocity * Config.PredictionValue)
+                    headPos = headPos + (targetHead.Velocity * Config.PredictionValue)
                 end
-                Camera.CFrame = CFrame.new(Camera.CFrame.Position, finalPos)
+                Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, headPos), Config.Smoothness)
             end
-        end
-
-        -- Xử lý Speed Hack
-        local character = LocalPlayer.Character
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        if humanoid and Config.SpeedHack then
-            humanoid.WalkSpeed = Config.SpeedVal
         end
     end)
 end)
 
--- Xử lý Noclip
 RunService.Stepped:Connect(function()
     pcall(function()
-        if Config.Noclip then
+        if Config.Noclip or Config.AutoFarm then
             local character = LocalPlayer.Character
             if character then
                 for _, part in ipairs(character:GetChildren()) do
@@ -436,4 +488,4 @@ RunService.Stepped:Connect(function()
     end)
 end)
 
-Notify("Đã kích hoạt hệ thống Full ESP thành công!")
+Notify("Đã tích hợp bảng chỉnh thông số thành công!")
