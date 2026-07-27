@@ -1,5 +1,5 @@
 -- =================================================================
--- 🚀 DONMENU MASTER - REDZ HUB TRUE TAB SYSTEM (CHUẨN GỐC)
+-- 🚀 DONMENU MASTER - REDZ HUB (ESP NAME & DISTANCE EDITION)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -16,12 +16,13 @@ local LocalPlayer = Players.LocalPlayer
 -- ==========================================
 getgenv().DonMenu = {
     Aim = false,
-    LegitAim = true,       
-    Smoothness = 0.15,     
+    LegitAim = true,       -- Aim mượt tự nhiên
+    AimOnShoot = true,     -- Chỉ lia tâm khi giữ nút bắn/chạm màn hình
+    Smoothness = 0.08,     -- Độ mượt lia tâm
     TargetPart = "Head",   
     ShowFOV = true,
     FOV = 120,
-    ESP = false,
+    ESP = false,           -- Bật/tắt ESP Tên & Khoảng cách
     Speed = false,
     SpeedValue = 50,
     Jump = false,
@@ -74,7 +75,7 @@ UIStroke.Color = Color3.fromRGB(45, 45, 45)
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
--- Thanh Tiêu Đề (TitleBar)
+-- Thanh Tiêu Đề
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 36)
 TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -96,7 +97,7 @@ local TitleText = Instance.new("TextLabel")
 TitleText.Size = UDim2.new(1, -40, 1, 0)
 TitleText.Position = UDim2.new(0, 14, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "redz hud • Tab System Edition"
+TitleText.Text = "redz hud • ESP Name & Distance Edition"
 TitleText.TextColor3 = Color3.fromRGB(220, 220, 220)
 TitleText.TextSize = 13
 TitleText.Font = Enum.Font.GothamBold
@@ -147,7 +148,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Thanh Menu Trái (Sidebar Tabs)
+-- Sidebar Tabs
 local Sidebar = Instance.new("ScrollingFrame")
 Sidebar.Size = UDim2.new(0, 135, 1, -44)
 Sidebar.Position = UDim2.new(0, 4, 0, 40)
@@ -160,14 +161,14 @@ SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
 SidebarLayout.Padding = UDim.new(0, 6)
 SidebarLayout.Parent = Sidebar
 
--- Khung Nội Dung Bên Phải (Content Area)
+-- Content Holder
 local ContentHolder = Instance.new("Frame")
 ContentHolder.Size = UDim2.new(1, -145, 1, -44)
 ContentHolder.Position = UDim2.new(0, 143, 0, 40)
 ContentHolder.BackgroundTransparency = 1
 ContentHolder.Parent = MainFrame
 
--- Logic Thu Nhỏ / Phóng To
+-- Thu Nhỏ
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
@@ -191,7 +192,6 @@ local Tabs = {}
 local FirstTab = nil
 
 local function CreateTab(tabName)
-    -- Nút bấm trên Sidebar
     local tabBtn = Instance.new("TextButton")
     tabBtn.Size = UDim2.new(1, 0, 0, 34)
     tabBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
@@ -206,7 +206,6 @@ local function CreateTab(tabName)
     btnCorner.CornerRadius = UDim.new(0, 6)
     btnCorner.Parent = tabBtn
 
-    -- Khung chứa tính năng của Tab đó
     local tabContent = Instance.new("ScrollingFrame")
     tabContent.Size = UDim2.new(1, 0, 1, 0)
     tabContent.BackgroundTransparency = 1
@@ -220,12 +219,10 @@ local function CreateTab(tabName)
     layout.Padding = UDim.new(0, 8)
     layout.Parent = tabContent
 
-    -- padding bottom cho đẹp
     local pad = Instance.new("UIPadding")
     pad.PaddingRight = UDim.new(0, 6)
     pad.Parent = tabContent
 
-    -- Sự kiện chuyển Tab
     tabBtn.MouseButton1Click:Connect(function()
         for _, t in pairs(Tabs) do
             t.Content.Visible = false
@@ -245,7 +242,6 @@ local function CreateTab(tabName)
     return tabContent
 end
 
--- Chọn Tab Mặc Định khi mở menu
 task.defer(function()
     if FirstTab then
         FirstTab.Content.Visible = true
@@ -254,7 +250,6 @@ task.defer(function()
     end
 end)
 
--- Hàm tạo các nút tính năng trong Tab
 local function CreateToggle(parentTab, name, settingKey, defaultState)
     if defaultState ~= nil then Settings[settingKey] = defaultState end
     local btn = Instance.new("TextButton")
@@ -343,18 +338,19 @@ local function CreateTextBox(parentTab, labelName, defaultVal, callback)
 end
 
 -- ==========================================
--- 🛠️ 2. TẠO CÁC TAB VÀ PHÂN CHIA TÍNH NĂNG
+-- 🛠️ 2. TẠO CÁC TAB & TÍNH NĂNG
 -- ==========================================
 
--- Tab 1: Combat (Aim Lock & FOV)
+-- Tab 1: Combat
 local CombatTab = CreateTab("🎯 Combat")
 CreateToggle(CombatTab, "Aim Lock", "Aim")
-CreateToggle(CombatTab, "Aim Legit (Mượt)", "LegitAim", true)
-CreateTextBox(CombatTab, "Độ Mượt (0.1-0.5)", Settings.Smoothness, function(v) Settings.Smoothness = math.clamp(v, 0.01, 1) end)
+CreateToggle(CombatTab, "Bắn Mới Aim", "AimOnShoot", true)
+CreateToggle(CombatTab, "Aim Tự Nhiên (Smooth)", "LegitAim", true)
+CreateTextBox(CombatTab, "Độ Mượt (0.01-0.2)", Settings.Smoothness, function(v) Settings.Smoothness = math.clamp(v, 0.01, 1) end)
 CreateToggle(CombatTab, "Hiện Vòng FOV", "ShowFOV")
 CreateTextBox(CombatTab, "Cỡ FOV", Settings.FOV, function(v) Settings.FOV = v end)
 
--- Tab 2: Player (Speed, Jump, Noclip)
+-- Tab 2: Player
 local PlayerTab = CreateTab("⚡ Player")
 CreateToggle(PlayerTab, "Speed Hack", "Speed")
 CreateTextBox(PlayerTab, "Tốc độ Speed", Settings.SpeedValue, function(v) Settings.SpeedValue = v end)
@@ -363,21 +359,51 @@ CreateTextBox(PlayerTab, "Lực Nhảy", Settings.JumpValue, function(v) Setting
 CreateToggle(PlayerTab, "Nhảy Vô Hạn", "InfJump")
 CreateToggle(PlayerTab, "Noclip Xuyên Tường", "Noclip")
 
--- Tab 3: Visual (ESP & FullBright)
+-- Tab 3: Visual
 local VisualTab = CreateTab("👁️ Visual")
-CreateToggle(VisualTab, "ESP Highlight", "ESP")
+CreateToggle(VisualTab, "ESP Tên & Khoảng Cách", "ESP")
 CreateToggle(VisualTab, "FullBright (Sáng Đêm)", "FullBright")
 
--- Tab 4: Misc (Fly & Click TP)
+-- Tab 4: Misc
 local MiscTab = CreateTab("🚀 Misc")
 CreateToggle(MiscTab, "Fly (Bay)", "Fly")
 CreateTextBox(MiscTab, "Tốc độ Fly", Settings.FlySpeed, function(v) Settings.FlySpeed = v end)
 CreateToggle(MiscTab, "Click TP (Ctrl+Click)", "ClickTP")
 
-
 -- ==========================================
 -- ⚙️ 3. LOGIC XỬ LÝ HỆ THỐNG
 -- ==========================================
+
+local isShooting = false
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isShooting = true
+    end
+
+    if gameProcessed then return end
+
+    if Settings.ClickTP and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
+            local mousePos = UserInputService:GetMouseLocation()
+            local ray = Camera:ViewportPointToRay(mousePos.X, mousePos.Y)
+            local raycastParams = RaycastParams.new()
+            raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
+            raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+            local raycastResult = workspace:Raycast(ray.Origin, ray.Direction * 1000, raycastParams)
+            if raycastResult and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0))
+            end
+        end
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isShooting = false
+    end
+end)
 
 local function GetClosestPlayer()
     local target = nil
@@ -408,24 +434,6 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if Settings.ClickTP and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
-            local mousePos = UserInputService:GetMouseLocation()
-            local ray = Camera:ViewportPointToRay(mousePos.X, mousePos.Y)
-            local raycastParams = RaycastParams.new()
-            raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
-            raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-
-            local raycastResult = workspace:Raycast(ray.Origin, ray.Direction * 1000, raycastParams)
-            if raycastResult and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0))
-            end
-        end
-    end
-end)
-
 local flyBV, flyBG
 local function StartFly()
     local char = LocalPlayer.Character
@@ -453,8 +461,8 @@ local function StopFly()
     if flyBG then flyBG:Destroy() flyBG = nil end
 end
 
-local HighlightFolder = Instance.new("Folder", workspace)
-HighlightFolder.Name = "DonMenuESP"
+local ESPFolder = Instance.new("Folder", workspace)
+ESPFolder.Name = "DonMenuESP"
 
 RunService.Stepped:Connect(function()
     if Settings.Noclip then
@@ -478,14 +486,18 @@ RunService.RenderStepped:Connect(function()
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
+    -- Aim Lock & Tự Nhiên
     if Settings.Aim then
-        local target = GetClosestPlayer()
-        if target then
-            local targetCFrame = CFrame.new(Camera.CFrame.Position, target.Position)
-            if Settings.LegitAim then
-                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Settings.Smoothness)
-            else
-                Camera.CFrame = targetCFrame
+        local canAim = not Settings.AimOnShoot or isShooting
+        if canAim then
+            local target = GetClosestPlayer()
+            if target then
+                local targetCFrame = CFrame.new(Camera.CFrame.Position, target.Position)
+                if Settings.LegitAim then
+                    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Settings.Smoothness)
+                else
+                    Camera.CFrame = targetCFrame
+                end
             end
         end
     end
@@ -498,33 +510,45 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    HighlightFolder:ClearAllChildren()
+    -- Xử lý ESP (Tên, Khoảng cách, Địch màu đỏ, Đồng đội màu xanh)
+    ESPFolder:ClearAllChildren()
     if Settings.ESP then
+        local localHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character then
-                local hl = Instance.new("Highlight")
-                hl.Adornee = p.Character
-                local isTeam = p.Team and LocalPlayer.Team and p.Team == LocalPlayer.Team
-                hl.FillColor = isTeam and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
-                hl.Parent = HighlightFolder
-            end
-        end
-    end
+                local pChar = p.Character
+                local pHrp = pChar:FindFirstChild("HumanoidRootPart")
+                local pHead = pChar:FindFirstChild("Head")
 
-    if Settings.Fly and hrp then
-        if not flyBV or not flyBV.Parent then StartFly() end
-        if flyBV and flyBG then
-            flyBV.Velocity = Camera.CFrame.LookVector * Settings.FlySpeed
-            flyBG.CFrame = Camera.CFrame
-        end
-    else
-        StopFly()
-    end
+                if pHrp and pHead then
+                    local isTeam = p.Team and LocalPlayer.Team and p.Team == LocalPlayer.Team
+                    -- Kịch bản màu: Địch đỏ, Đồng đội xanh
+                    local espColor = isTeam and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 
-    if Settings.FullBright then
-        Lighting.Brightness = 2
-        Lighting.ClockTime = 14
-        Lighting.FogEnd = 100000
-        Lighting.GlobalShadows = false
-    end
-end)
+                    -- 1. Highlight
+                    local hl = Instance.new("Highlight")
+                    hl.Adornee = pChar
+                    hl.FillColor = espColor
+                    hl.OutlineColor = espColor
+                    hl.FillTransparency = 0.5
+                    hl.Parent = ESPFolder
+
+                    -- 2. Tính khoảng cách
+                    local distance = localHrp and math.floor((localHrp.Position - pHrp.Position).Magnitude) or 0
+
+                    -- 3. Text Tên & Khoảng cách (BillboardGui)
+                    local bg = Instance.new("BillboardGui")
+                    bg.Name = "ESPText"
+                    bg.Adornee = pHead
+                    bg.Size = UDim2.new(0, 120, 0, 50)
+                    bg.StudsOffset = Vector3.new(0, 2.5, 0)
+                    bg.AlwaysOnTop = true
+                    bg.Parent = ESPFolder
+
+                    local txt = Instance.new("TextLabel")
+                    txt.Size = UDim2.new(1, 0, 1, 0)
+                    txt.BackgroundTransparency = 1
+                    txt.Text = string.format("%s\n[%dm]", p.Name, distance)
+                    txt.TextColor3 = espColor
+                    txt.TextSize = 12
+                    txt.Font = Enum.Fon
