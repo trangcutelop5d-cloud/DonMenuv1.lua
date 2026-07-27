@@ -1,10 +1,10 @@
 -- =================================================================
--- ⚡ QUANTUM HUB - LIGHT GREEN V2 (FIXED UI & STABLE ESP)
+-- ⚡ QUANTUM HUB - LIGHT GREEN (ULTRA STABLE EDITION)
 -- =================================================================
 
 pcall(function()
-    for _, v in pairs(game:GetService("CoreGui"):GetChildren()) do
-        if v.Name:find("Quantum") or v.Name:find("DonMenu") then
+    for _, v in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
+        if v.Name == "QuantumHub_UI" then
             v:Destroy()
         end
     end
@@ -12,28 +12,11 @@ end)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
 local Camera = workspace.CurrentCamera
-
 local LocalPlayer = Players.LocalPlayer
-if not LocalPlayer then
-    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-    LocalPlayer = Players.LocalPlayer
-end
 
-local function Notify(text)
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = "Quantum Hub V2",
-            Text = text,
-            Duration = 2.5
-        })
-    end)
-end
-
-Notify("Đã khởi chạy Quantum Hub phiên bản mới!")
-
+-- Cấu hình mặc định
 getgenv().QuantumSettings = {
     ESPEnabled = true,
     BoxESP = true,
@@ -52,8 +35,111 @@ getgenv().QuantumSettings = {
 local Config = getgenv().QuantumSettings
 
 local ThemeColor = Color3.fromRGB(120, 255, 140)
-local ThemeColorDark = Color3.fromRGB(10, 20, 12)
+local ThemeDark = Color3.fromRGB(12, 18, 14)
+local PanelColor = Color3.fromRGB(18, 26, 20)
 
+-- Tạo Giao Diện UI
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "QuantumHub_UI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = PlayerGui
+
+-- Nút Bật/Tắt Tròn
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
+ToggleBtn.Position = UDim2.new(0, 15, 0.35, 0)
+ToggleBtn.BackgroundColor3 = ThemeDark
+ToggleBtn.Text = "🟢"
+ToggleBtn.TextColor3 = ThemeColor
+ToggleBtn.TextSize = 20
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+local BtnStroke = Instance.new("UIStroke", ToggleBtn)
+BtnStroke.Color = ThemeColor
+BtnStroke.Thickness = 2
+
+-- Bảng Main
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 420, 0, 280)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
+MainFrame.BackgroundColor3 = ThemeDark
+MainFrame.Visible = true
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = ThemeColor
+MainStroke.Thickness = 1.5
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 32)
+Title.BackgroundColor3 = PanelColor
+Title.Text = "⚡ QUANTUM HUB - LIGHT GREEN"
+Title.TextColor3 = ThemeColor
+Title.TextSize = 12
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 8)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Khung Nội Dung Chức Năng
+local ContentScroll = Instance.new("ScrollingFrame")
+ContentScroll.Size = UDim2.new(1, -16, 1, -44)
+ContentScroll.Position = UDim2.new(0, 8, 0, 38)
+ContentScroll.BackgroundTransparency = 1
+ContentScroll.ScrollBarThickness = 3
+ContentScroll.Parent = MainFrame
+
+local ContentLayout = Instance.new("UIListLayout", ContentScroll)
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ContentLayout.Padding = UDim.new(0, 6)
+
+local function AddToggle(text, configKey)
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(1, -6, 0, 32)
+    Btn.BackgroundColor3 = Config[configKey] and ThemeColor or PanelColor
+    Btn.Text = "  " .. text .. (Config[configKey] and ": [ON]" or ": [OFF]")
+    Btn.TextColor3 = Config[configKey] and ThemeDark or Color3.fromRGB(180, 220, 180)
+    Btn.Font = Enum.Font.GothamSemibold
+    Btn.TextSize = 11
+    Btn.TextXAlignment = Enum.TextXAlignment.Left
+    Btn.Parent = ContentScroll
+    
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+
+    Btn.MouseButton1Click:Connect(function()
+        Config[configKey] = not Config[configKey]
+        Btn.Text = "  " .. text .. (Config[configKey] and ": [ON]" or ": [OFF]")
+        Btn.TextColor3 = Config[configKey] and ThemeDark or Color3.fromRGB(180, 220, 180)
+        Btn.BackgroundColor3 = Config[configKey] and ThemeColor or PanelColor
+    end)
+end
+
+-- Các Nút Chức Năng
+AddToggle("👁️ ESP Bật/Tắt Tổng", "ESPEnabled")
+AddToggle("📦 ESP Box Khung", "BoxESP")
+AddToggle("💚 ESP Thanh Máu", "HealthBar")
+AddToggle("📏 ESP Đường Kẻ (Line)", "LineESP")
+AddToggle("👤 ESP Tên Người Chơi", "NameESP")
+AddToggle("🚩 ESP Khoảng Cách", "DistanceESP")
+AddToggle("🧱 XG (Noclip Xuyên Tường)", "Noclip")
+AddToggle("🎯 FF Headshot Aim (Kéo Tâm)", "HeadshotAssist")
+
+ContentScroll.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 10)
+
+-- Kho Lưu Trữ Drawing ESP
 local ESPStorage = {}
 
 local function RemoveESP(player)
@@ -66,7 +152,7 @@ local function RemoveESP(player)
 end
 
 local function CreateESP(player)
-    if ESPStorage[player] then return end
+    if ESPStorage[player] or not Drawing then return end
     
     local drawings = {
         Box = Drawing.new("Square"),
@@ -109,244 +195,7 @@ local function CreateESP(player)
     ESPStorage[player] = drawings
 end
 
-Players.PlayerRemoving:Connect(function(player)
-    RemoveESP(player)
-end)
-
-local FOVCircle = nil
-pcall(function()
-    if Drawing and Drawing.new then
-        FOVCircle = Drawing.new("Circle")
-        FOVCircle.Color = ThemeColor
-        FOVCircle.Thickness = 1.5
-        FOVCircle.NumSides = 32
-        FOVCircle.Radius = Config.FOVRadius
-        FOVCircle.Filled = false
-        FOVCircle.Visible = false
-    end
-end)
-
--- Gán UI trực tiếp vào PlayerGui để chắc chắn hiển thị lên màn hình
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "QuantumHub_Fixed"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = PlayerGui
-
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
-ToggleBtn.Position = UDim2.new(0, 20, 0.3, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(12, 18, 14)
-ToggleBtn.Text = "🟢"
-ToggleBtn.TextColor3 = ThemeColor
-ToggleBtn.TextSize = 22
-ToggleBtn.Font = Enum.Font.GothamBold
-ToggleBtn.Active = true
-ToggleBtn.Draggable = true
-ToggleBtn.Parent = ScreenGui
-
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
-local BtnStroke = Instance.new("UIStroke", ToggleBtn)
-BtnStroke.Color = ThemeColor
-BtnStroke.Thickness = 2
-
-local MainWindow = Instance.new("Frame")
-MainWindow.Size = UDim2.new(0, 490, 0, 330)
-MainWindow.Position = UDim2.new(0.5, -245, 0.5, -165)
-MainWindow.BackgroundColor3 = Color3.fromRGB(10, 15, 12)
-MainWindow.Visible = true
-MainWindow.Parent = ScreenGui
-
-Instance.new("UICorner", MainWindow).CornerRadius = UDim.new(0, 8)
-local MainStroke = Instance.new("UIStroke", MainWindow)
-MainStroke.Color = ThemeColor
-MainStroke.Thickness = 1.5
-
-local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1, 0, 0, 34)
-Header.BackgroundColor3 = Color3.fromRGB(14, 22, 16)
-Header.Parent = MainWindow
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, -15, 1, 0)
-TitleLabel.Position = UDim2.new(0, 12, 0, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "QUANTUM HUB • LIGHT GREEN V2"
-TitleLabel.TextColor3 = ThemeColor
-TitleLabel.TextSize = 11
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Parent = Header
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    MainWindow.Visible = not MainWindow.Visible
-end)
-
-local Sidebar = Instance.new("ScrollingFrame")
-Sidebar.Size = UDim2.new(0, 120, 1, -44)
-Sidebar.Position = UDim2.new(0, 6, 0, 38)
-Sidebar.BackgroundTransparency = 1
-Sidebar.ScrollBarThickness = 0
-Sidebar.Parent = MainWindow
-
-local SidebarList = Instance.new("UIListLayout", Sidebar)
-SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
-SidebarList.Padding = UDim.new(0, 5)
-
-local ContentArea = Instance.new("Frame")
-ContentArea.Size = UDim2.new(1, -134, 1, -44)
-ContentArea.Position = UDim2.new(0, 130, 0, 38)
-ContentArea.BackgroundTransparency = 1
-ContentArea.Parent = MainWindow
-
-local TabsList = {}
-local FirstTabContent = nil
-
-local function MakeTab(tabTitle)
-    local TabBtn = Instance.new("TextButton")
-    TabBtn.Size = UDim2.new(1, 0, 0, 30)
-    TabBtn.BackgroundColor3 = Color3.fromRGB(15, 22, 17)
-    TabBtn.Text = "  " .. tabTitle
-    TabBtn.TextColor3 = Color3.fromRGB(150, 180, 150)
-    TabBtn.Font = Enum.Font.GothamSemibold
-    TabBtn.TextSize = 11
-    TabBtn.TextXAlignment = Enum.TextXAlignment.Left
-    TabBtn.Parent = Sidebar
-    Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
-
-    local TabContainer = Instance.new("ScrollingFrame")
-    TabContainer.Size = UDim2.new(1, 0, 1, 0)
-    TabContainer.BackgroundTransparency = 1
-    TabContainer.ScrollBarThickness = 2
-    TabContainer.Visible = false
-    TabContainer.Parent = ContentArea
-
-    local ContainerLayout = Instance.new("UIListLayout", TabContainer)
-    ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ContainerLayout.Padding = UDim.new(0, 5)
-
-    TabBtn.MouseButton1Click:Connect(function()
-        for _, t in ipairs(TabsList) do
-            t.Container.Visible = false
-            t.Button.BackgroundColor3 = Color3.fromRGB(15, 22, 17)
-            t.Button.TextColor3 = Color3.fromRGB(150, 180, 150)
-        end
-        TabContainer.Visible = true
-        TabBtn.BackgroundColor3 = ThemeColor
-        TabBtn.TextColor3 = ThemeColorDark
-    end)
-
-    if not FirstTabContent then 
-        FirstTabContent = {Button = TabBtn, Container = TabContainer} 
-    end
-    table.insert(TabsList, {Button = TabBtn, Container = TabContainer})
-    return TabContainer
-end
-
-local function MakeToggle(parentTab, labelText, configKey, defaultVal)
-    if defaultVal ~= nil then Config[configKey] = defaultVal end
-    
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Size = UDim2.new(1, -4, 0, 30)
-    ToggleButton.BackgroundColor3 = Config[configKey] and ThemeColor or Color3.fromRGB(15, 22, 17)
-    ToggleButton.Text = "  " .. labelText .. (Config[configKey] and ": [ON]" or ": [OFF]")
-    ToggleButton.TextColor3 = Config[configKey] and ThemeColorDark or Color3.fromRGB(170, 200, 170)
-    ToggleButton.Font = Enum.Font.GothamSemibold
-    ToggleButton.TextSize = 11
-    ToggleButton.TextXAlignment = Enum.TextXAlignment.Left
-    ToggleButton.Parent = parentTab
-    
-    Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 6)
-
-    ToggleButton.MouseButton1Click:Connect(function()
-        Config[configKey] = not Config[configKey]
-        ToggleButton.Text = "  " .. labelText .. (Config[configKey] and ": [ON]" or ": [OFF]")
-        ToggleButton.TextColor3 = Config[configKey] and ThemeColorDark or Color3.fromRGB(170, 200, 170)
-        ToggleButton.BackgroundColor3 = Config[configKey] and ThemeColor or Color3.fromRGB(15, 22, 17)
-    end)
-end
-
-local function MakeSlider(parentTab, labelText, configKey, step, minVal, maxVal)
-    local Container = Instance.new("Frame")
-    Container.Size = UDim2.new(1, -4, 0, 42)
-    Container.BackgroundColor3 = Color3.fromRGB(15, 22, 17)
-    Container.Parent = parentTab
-    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 6)
-
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, -90, 1, 0)
-    Label.Position = UDim2.new(0, 8, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.Text = labelText .. ": " .. tostring(Config[configKey])
-    Label.TextColor3 = Color3.fromRGB(190, 220, 190)
-    Label.Font = Enum.Font.GothamSemibold
-    Label.TextSize = 11
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = Container
-
-    local MinusBtn = Instance.new("TextButton")
-    MinusBtn.Size = UDim2.new(0, 35, 0, 26)
-    MinusBtn.Position = UDim2.new(1, -78, 0.5, -13)
-    MinusBtn.BackgroundColor3 = Color3.fromRGB(25, 38, 28)
-    MinusBtn.Text = "-"
-    MinusBtn.TextColor3 = ThemeColor
-    MinusBtn.Font = Enum.Font.GothamBold
-    MinusBtn.TextSize = 14
-    MinusBtn.Parent = Container
-    Instance.new("UICorner", MinusBtn).CornerRadius = UDim.new(0, 4)
-
-    local PlusBtn = Instance.new("TextButton")
-    PlusBtn.Size = UDim2.new(0, 35, 0, 26)
-    PlusBtn.Position = UDim2.new(1, -39, 0.5, -13)
-    PlusBtn.BackgroundColor3 = Color3.fromRGB(25, 38, 28)
-    PlusBtn.Text = "+"
-    PlusBtn.TextColor3 = ThemeColor
-    PlusBtn.Font = Enum.Font.GothamBold
-    PlusBtn.TextSize = 14
-    PlusBtn.Parent = Container
-    Instance.new("UICorner", PlusBtn).CornerRadius = UDim.new(0, 4)
-
-    MinusBtn.MouseButton1Click:Connect(function()
-        Config[configKey] = math.clamp(Config[configKey] - step, minVal, maxVal)
-        Config[configKey] = tonumber(string.format("%.2f", Config[configKey]))
-        Label.Text = labelText .. ": " .. tostring(Config[configKey])
-    end)
-
-    PlusBtn.MouseButton1Click:Connect(function()
-        Config[configKey] = math.clamp(Config[configKey] + step, minVal, maxVal)
-        Config[configKey] = tonumber(string.format("%.2f", Config[configKey]))
-        Label.Text = labelText .. ": " .. tostring(Config[configKey])
-    end)
-end
-
-local ESPCategory = MakeTab("👁️ ESP Xanh Lá")
-MakeToggle(ESPCategory, "Bật/Tắt Tổng ESP", "ESPEnabled", true)
-MakeToggle(ESPCategory, "ESP Khung (Box)", "BoxESP", true)
-MakeToggle(ESPCategory, "ESP Thanh Máu", "HealthBar", true)
-MakeToggle(ESPCategory, "ESP Đường Kẻ (Line)", "LineESP", true)
-MakeToggle(ESPCategory, "ESP Tên Người Chơi", "NameESP", true)
-MakeToggle(ESPCategory, "ESP Khoảng Cách (m)", "DistanceESP", true)
-
-local XGCategory = MakeTab("🧱 XG (Xuyên Tường)")
-MakeToggle(XGCategory, "Noclip Xuyên Tường", "Noclip", false)
-
-local AimCategory = MakeTab("🎯 FF Headshot")
-MakeToggle(AimCategory, "Kéo Tâm Đầu (FF)", "HeadshotAssist", false)
-MakeToggle(AimCategory, "Dự Đoán Đường Bay", "Prediction", true)
-MakeToggle(AimCategory, "Hiển Thị Vòng FOV", "ShowFOV", true)
-
-local ConfigCategory = MakeTab("⚙️ Tùy Chỉnh Số")
-MakeSlider(ConfigCategory, "Bán kính FOV", "FOVRadius", 10, 50, 400)
-MakeSlider(ConfigCategory, "Độ mượt (Smooth)", "Smoothness", 0.05, 0.05, 1.0)
-MakeSlider(ConfigCategory, "Độ dự đoán (Pred)", "PredictionValue", 0.01, 0.0, 0.5)
-
-if FirstTabContent then
-    FirstTabContent.Container.Visible = true
-    FirstTabContent.Button.BackgroundColor3 = ThemeColor
-    FirstTabContent.Button.TextColor3 = ThemeColorDark
-end
+Players.PlayerRemoving:Connect(RemoveESP)
 
 local isFiring = false
 UserInputService.InputBegan:Connect(function(input)
@@ -361,16 +210,11 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
+-- Vòng Lặp Xử Lý ESP & Headshot Aim
 RunService.RenderStepped:Connect(function()
     pcall(function()
         Camera = workspace.CurrentCamera
         if not Camera then return end
-
-        if FOVCircle then
-            FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-            FOVCircle.Radius = Config.FOVRadius
-            FOVCircle.Visible = Config.ShowFOV and Config.HeadshotAssist
-        end
 
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer then
@@ -382,68 +226,70 @@ RunService.RenderStepped:Connect(function()
                     if hum.Health > 0 then
                         CreateESP(p)
                         local esp = ESPStorage[p]
-                        local rootPos, rootOnScreen = Camera:WorldToViewportPoint(hrp.Position)
-                        
-                        if rootOnScreen then
-                            local head = char:FindFirstChild("Head") or hrp
-                            local topPos = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.8, 0))
-                            local bottomPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 2.5, 0))
+                        if esp then
+                            local rootPos, rootOnScreen = Camera:WorldToViewportPoint(hrp.Position)
                             
-                            local boxHeight = math.abs(topPos.Y - bottomPos.Y)
-                            local boxWidth = boxHeight / 2
-                            local boxX = rootPos.X - boxWidth / 2
-                            local boxY = topPos.Y
-                            
-                            if Config.BoxESP then
-                                esp.Box.Size = Vector2.new(boxWidth, boxHeight)
-                                esp.Box.Position = Vector2.new(boxX, boxY)
-                                esp.Box.Visible = true
-                            else
-                                esp.Box.Visible = false
-                            end
-                            
-                            if Config.HealthBar then
-                                local healthPercent = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
-                                local barHeight = boxHeight * healthPercent
+                            if rootOnScreen then
+                                local head = char:FindFirstChild("Head") or hrp
+                                local topPos = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.8, 0))
+                                local bottomPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 2.5, 0))
                                 
-                                esp.HealthBarBg.From = Vector2.new(boxX - 5, boxY)
-                                esp.HealthBarBg.To = Vector2.new(boxX - 5, boxY + boxHeight)
-                                esp.HealthBarBg.Visible = true
+                                local boxHeight = math.abs(topPos.Y - bottomPos.Y)
+                                local boxWidth = boxHeight / 2
+                                local boxX = rootPos.X - boxWidth / 2
+                                local boxY = topPos.Y
                                 
-                                esp.HealthBar.From = Vector2.new(boxX - 5, boxY + boxHeight)
-                                esp.HealthBar.To = Vector2.new(boxX - 5, (boxY + boxHeight) - barHeight)
-                                esp.HealthBar.Visible = true
+                                if Config.BoxESP then
+                                    esp.Box.Size = Vector2.new(boxWidth, boxHeight)
+                                    esp.Box.Position = Vector2.new(boxX, boxY)
+                                    esp.Box.Visible = true
+                                else
+                                    esp.Box.Visible = false
+                                end
+                                
+                                if Config.HealthBar then
+                                    local healthPercent = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
+                                    local barHeight = boxHeight * healthPercent
+                                    
+                                    esp.HealthBarBg.From = Vector2.new(boxX - 5, boxY)
+                                    esp.HealthBarBg.To = Vector2.new(boxX - 5, boxY + boxHeight)
+                                    esp.HealthBarBg.Visible = true
+                                    
+                                    esp.HealthBar.From = Vector2.new(boxX - 5, boxY + boxHeight)
+                                    esp.HealthBar.To = Vector2.new(boxX - 5, (boxY + boxHeight) - barHeight)
+                                    esp.HealthBar.Visible = true
+                                else
+                                    esp.HealthBarBg.Visible = false
+                                    esp.HealthBar.Visible = false
+                                end
+                                
+                                if Config.LineESP then
+                                    esp.Line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                                    esp.Line.To = Vector2.new(rootPos.X, bottomPos.Y)
+                                    esp.Line.Visible = true
+                                else
+                                    esp.Line.Visible = false
+                                end
+                                
+                                if Config.NameESP then
+                                    esp.Name.Text = p.Name
+                                    esp.Name.Position = Vector2.new(rootPos.X, boxY - 16)
+                                    esp.Name.Visible = true
+                                else
+                                    esp.Name.Visible = false
+                                end
+                                
+                                if Config.DistanceESP and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                    local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
+                                    esp.Info.Text = dist .. "m"
+                                    esp.Info.Position = Vector2.new(rootPos.X, bottomPos.Y + 2)
+                                    esp.Info.Visible = true
+                                else
+                                    esp.Info.Visible = false
+                                end
                             else
-                                esp.HealthBarBg.Visible = false
-                                esp.HealthBar.Visible = false
+                                for _, d in pairs(esp) do d.Visible = false end
                             end
-                            
-                            if Config.LineESP then
-                                esp.Line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                                esp.Line.To = Vector2.new(rootPos.X, bottomPos.Y)
-                                esp.Line.Visible = true
-                            else
-                                esp.Line.Visible = false
-                            end
-                            
-                            if Config.NameESP then
-                                esp.Name.Text = p.Name
-                                esp.Name.Position = Vector2.new(rootPos.X, boxY - 16)
-                                esp.Name.Visible = true
-                            else
-                                esp.Name.Visible = false
-                            end
-                            
-                            if Config.DistanceESP and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
-                                esp.Info.Text = dist .. "m"
-                                esp.Info.Position = Vector2.new(rootPos.X, bottomPos.Y + 2)
-                                esp.Info.Visible = true
-                            else
-                                esp.Info.Visible = false
-                            end
-                        else
-                            for _, d in pairs(esp) do d.Visible = false end
                         end
                     else
                         RemoveESP(p)
@@ -454,6 +300,7 @@ RunService.RenderStepped:Connect(function()
             end
         end
 
+        -- Kéo Tâm Đầu
         if Config.HeadshotAssist and isFiring then
             local targetHead = nil
             local minDistance = Config.FOVRadius
@@ -476,29 +323,22 @@ RunService.RenderStepped:Connect(function()
             end
 
             if targetHead then
-                local headPos = targetHead.Position
-                if Config.Prediction then
-                    headPos = headPos + (targetHead.Velocity * Config.PredictionValue)
-                end
+                local headPos = targetHead.Position + (targetHead.Velocity * Config.PredictionValue)
                 Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, headPos), Config.Smoothness)
             end
         end
     end)
 end)
 
+-- XG (Noclip)
 RunService.Stepped:Connect(function()
     pcall(function()
-        if Config.Noclip then
-            local character = LocalPlayer.Character
-            if character then
-                for _, part in ipairs(character:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
+        if Config.Noclip and LocalPlayer.Character then
+            for _, part in ipairs(LocalPlayer.Character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
                 end
             end
         end
     end)
 end)
-
-Notify("Đã sửa lỗi hiển thị và load thành công!")
