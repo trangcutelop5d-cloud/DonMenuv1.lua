@@ -1,349 +1,254 @@
 -- =================================================================
--- 🚀 DONMENU - ALL-IN-ONE MASTER SCRIPT
+-- 🚀 DONMENU MOBILE - BẢN ĐẦY ĐỦ + GIAO DIỆN KÉO THẢ (DRAGGABLE GUI)
 -- =================================================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local Lighting = game:GetService("Lighting")
-
-local LocalPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
 local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
--- ==========================================
--- ⚙️ BẢNG CẤU HÌNH TỔNG (SETTINGS)
--- ==========================================
+-- Bảng cấu hình
 getgenv().DonMenu = {
-    Aim = {
-        Enabled = false,
-        TeamCheck = true,
-        TargetPart = "Head", -- "Head" hoặc "HumanoidRootPart"
-        FOV = 120,
-        ShowFOV = false,
-        Smoothness = 0.2
-    },
-    ESP = {
-        Enabled = false,
-        ShowTeam = true,
-        Boxes = true,
-        Names = true,
-        Tracers = false,
-        EnemyColor = Color3.fromRGB(255, 50, 50), -- Địch màu đỏ
-        TeamColor = Color3.fromRGB(50, 255, 50)   -- Đồng đội màu xanh
-    },
-    Speed = {
-        Enabled = false,
-        Value = 50
-    },
-    Jump = {
-        Enabled = false,
-        Value = 100
-    },
-    InfJump = { Enabled = false },
-    Noclip = { Enabled = false },
-    Fly = {
-        Enabled = false,
-        Speed = 50
-    },
-    TP = { ClickTPEnabled = false },
-    FullBright = { Enabled = false }
+    Aim = false,
+    ESP = false,
+    Speed = false,
+    SpeedValue = 50,
+    Fly = false,
+    FlySpeed = 50,
+    Noclip = false,
+    InfJump = false
 }
-
 local Settings = getgenv().DonMenu
 
 -- ==========================================
--- 🎯 1. AIMBOT & FOV CỐ ĐỊNH
+-- 📱 1. TẠO GUI & BỘ KÉO THẢ (DRAG) CHO MOBILE
 -- ==========================================
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-FOVCircle.Thickness = 1.5
-FOVCircle.NumSides = 60
-FOVCircle.Radius = Settings.Aim.FOV
-FOVCircle.Filled = false
-FOVCircle.Visible = false
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DonMenuMobileUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 
-local function GetScreenCenter()
-    return Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 180, 0, 260)
+MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = MainFrame
+
+-- Thanh Tiêu Đề (Nơi đè ngón tay để kéo Menu)
+local TitleBar = Instance.new("TextLabel")
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+TitleBar.Text = "🖐️ DonMenu (Kéo ở đây)"
+TitleBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleBar.TextSize = 13
+TitleBar.Font = Enum.Font.SourceSansBold
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.Parent = TitleBar
+
+-- Xử lý logic kéo thả mượt mà trên màn hình cảm ứng Mobile
+local dragging, dragInput, dragStart, startPos
+
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- ==========================================
+-- 🔘 2. TẠO CÁC NÚT BẤM TRÊN MENU
+-- ==========================================
+local Container = Instance.new("ScrollingFrame")
+Container.Size = UDim2.new(1, -10, 1, -45)
+Container.Position = UDim2.new(0, 5, 0, 40)
+Container.BackgroundTransparency = 1
+Container.ScrollBarThickness = 2
+Container.Parent = MainFrame
+
+local UIList = Instance.new("UIListLayout")
+UIList.Padding = UDim.new(0, 5)
+UIList.Parent = Container
+
+local function CreateToggle(name, settingKey)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 30)
+    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    btn.Text = name .. ": OFF"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 12
+    btn.Parent = Container
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 5)
+    corner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        Settings[settingKey] = not Settings[settingKey]
+        if Settings[settingKey] then
+            btn.Text = name .. ": ON"
+            btn.BackgroundColor3 = Color3.fromRGB(40, 180, 40)
+        else
+            btn.Text = name .. ": OFF"
+            btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+        end
+    end)
 end
 
+CreateToggle("🎯 Aim Lock", "Aim")
+CreateToggle("👁️ ESP Box", "ESP")
+CreateToggle("⚡ Speed (50)", "Speed")
+CreateToggle("🕊️ Fly (Bay)", "Fly")
+CreateToggle("👻 Noclip", "Noclip")
+CreateToggle("🦘 Inf Jump", "InfJump")
+
+-- ==========================================
+-- ⚙️ 3. LOGIC HỆ THỐNG
+-- ==========================================
+
+-- Aim
 local function GetClosestPlayer()
-    local closestTarget = nil
-    local shortestDistance = Settings.Aim.FOV
-    local centerPos = GetScreenCenter()
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-            if Settings.Aim.TeamCheck and player.Team and LocalPlayer.Team and player.Team == LocalPlayer.Team then
-                continue
-            end
-
-            local part = player.Character:FindFirstChild(Settings.Aim.TargetPart)
-            if part then
-                local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
-                if onScreen then
-                    local distance = (Vector2.new(screenPos.X, screenPos.Y) - centerPos).Magnitude
-                    if distance < shortestDistance then
-                        shortestDistance = distance
-                        closestTarget = part
-                    end
+    local target = nil
+    local minDist = 200
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+            local pos, onScreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
+            if onScreen then
+                local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    target = p.Character.Head
                 end
             end
         end
     end
-    return closestTarget
+    return target
 end
 
--- ==========================================
--- 👁️ 2. HỆ THỐNG ESP
--- ==========================================
-local ESPObjects = {}
-
-local function CreateESP(player)
-    if player == LocalPlayer then return end
-
-    local drawings = {
-        Box = Drawing.new("Square"),
-        Name = Drawing.new("Text"),
-        Tracer = Drawing.new("Line")
-    }
-
-    drawings.Box.Thickness = 1.5
-    drawings.Box.Filled = false
-    drawings.Box.Visible = false
-
-    drawings.Name.Size = 14
-    drawings.Name.Center = true
-    drawings.Name.Outline = true
-    drawings.Name.Color = Color3.fromRGB(255, 255, 255)
-    drawings.Name.Visible = false
-
-    drawings.Tracer.Thickness = 1.5
-    drawings.Tracer.Visible = false
-
-    ESPObjects[player] = drawings
-end
-
-local function RemoveESP(player)
-    if ESPObjects[player] then
-        for _, drawing in pairs(ESPObjects[player]) do
-            drawing:Remove()
-        end
-        ESPObjects[player] = nil
-    end
-end
-
-for _, player in ipairs(Players:GetPlayers()) do
-    CreateESP(player)
-end
-Players.PlayerAdded:Connect(CreateESP)
-Players.PlayerRemoving:Connect(RemoveESP)
-
--- ==========================================
--- 🦘 3. NHẢY VÔ HẠN (INF JUMP)
--- ==========================================
+-- Infinite Jump
 UserInputService.JumpRequest:Connect(function()
-    if Settings.InfJump.Enabled then
+    if Settings.InfJump then
         local char = LocalPlayer.Character
         local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
+        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
     end
 end)
 
--- ==========================================
--- 👻 4. XUYÊN TƯỜNG (NOCLIP)
--- ==========================================
-RunService.Stepped:Connect(function()
-    if Settings.Noclip.Enabled then
-        local char = LocalPlayer.Character
-        if char then
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") and part.CanCollide then
-                    part.CanCollide = false
-                end
-            end
-        end
-    end
-end)
+-- ESP Highlight
+local HighlightFolder = Instance.new("Folder", workspace)
+HighlightFolder.Name = "DonMenuESP"
 
--- ==========================================
--- 🕊️ 5. FLY (BAY TỰ DO)
--- ==========================================
+-- Fly Logic
 local flyBV, flyBG
-
 local function StartFly()
     local char = LocalPlayer.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local hum = char:FindFirstChild("Humanoid")
-    if not hrp or not hum then return end
-
-    hum.PlatformStand = true
-
-    flyBV = Instance.new("BodyVelocity")
-    flyBV.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-    flyBV.Velocity = Vector3.new(0, 0, 0)
-    flyBV.Parent = hrp
-
-    flyBG = Instance.new("BodyGyro")
-    flyBG.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-    flyBG.CFrame = hrp.CFrame
-    flyBG.Parent = hrp
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hrp and hum then
+        hum.PlatformStand = true
+        flyBV = Instance.new("BodyVelocity")
+        flyBV.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+        flyBV.Velocity = Vector3.new(0,0,0)
+        flyBV.Parent = hrp
+        flyBG = Instance.new("BodyGyro")
+        flyBG.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
+        flyBG.CFrame = hrp.CFrame
+        flyBG.Parent = hrp
+    end
 end
 
 local function StopFly()
     local char = LocalPlayer.Character
-    if char then
-        local hum = char:FindFirstChild("Humanoid")
-        if hum then hum.PlatformStand = false end
-    end
-
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.PlatformStand = false end
     if flyBV then flyBV:Destroy() flyBV = nil end
     if flyBG then flyBG:Destroy() flyBG = nil end
 end
 
 -- ==========================================
--- ⚡ 6. CLICK TELEPORT
+-- 🔄 4. VÒNG LẶP CHÍNH (RENDER & STEPPED)
 -- ==========================================
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if Settings.TP.ClickTPEnabled and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
-            local mousePos = UserInputService:GetMouseLocation()
-            local ray = Camera:ViewportPointToRay(mousePos.X, mousePos.Y)
-            local raycastParams = RaycastParams.new()
-            raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
-            raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-            
-            local raycastResult = workspace:Raycast(ray.Origin, ray.Direction * 1000, raycastParams)
-            if raycastResult and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0))
+RunService.Stepped:Connect(function()
+    if Settings.Noclip then
+        local char = LocalPlayer.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide = false end
             end
         end
     end
 end)
 
--- ==========================================
--- 🔄 VÒNG LẶP CẬP NHẬT RENDERSTEPPED
--- ==========================================
 RunService.RenderStepped:Connect(function()
-    -- 1. AIM & FOV
-    FOVCircle.Position = GetScreenCenter()
-    FOVCircle.Radius = Settings.Aim.FOV
-    FOVCircle.Visible = Settings.Aim.ShowFOV and Settings.Aim.Enabled
-
-    if Settings.Aim.Enabled then
-        local targetPart = GetClosestPlayer()
-        if targetPart then
-            local currentCFrame = Camera.CFrame
-            local targetCFrame = CFrame.new(currentCFrame.Position, targetPart.Position)
-            Camera.CFrame = currentCFrame:Lerp(targetCFrame, Settings.Aim.Smoothness)
-        end
-    end
-
-    -- 2. ESP
-    for player, drawings in pairs(ESPObjects) do
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local hum = char and char:FindFirstChild("Humanoid")
-
-        local isAlive = char and hrp and hum and hum.Health > 0
-        local isTeam = player.Team and LocalPlayer.Team and player.Team == LocalPlayer.Team
-        local shouldShow = Settings.ESP.Enabled and isAlive and (not isTeam or Settings.ESP.ShowTeam)
-
-        if shouldShow then
-            local hrpPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-
-            if onScreen then
-                local currentColor = isTeam and Settings.ESP.TeamColor or Settings.ESP.EnemyColor
-                local head = char:FindFirstChild("Head")
-                local headPos = head and Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0)) or hrpPos
-                local legPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
-
-                local height = math.abs(headPos.Y - legPos.Y)
-                local width = height / 1.5
-
-                if Settings.ESP.Boxes then
-                    drawings.Box.Size = Vector2.new(width, height)
-                    drawings.Box.Position = Vector2.new(hrpPos.X - width / 2, hrpPos.Y - height / 2)
-                    drawings.Box.Color = currentColor
-                    drawings.Box.Visible = true
-                else
-                    drawings.Box.Visible = false
-                end
-
-                if Settings.ESP.Names then
-                    local distance = math.floor((hrp.Position - Camera.CFrame.Position).Magnitude)
-                    drawings.Name.Text = string.format("%s [%dm]", player.Name, distance)
-                    drawings.Name.Position = Vector2.new(hrpPos.X, hrpPos.Y - height / 2 - 16)
-                    drawings.Name.Visible = true
-                else
-                    drawings.Name.Visible = false
-                end
-
-                if Settings.ESP.Tracers then
-                    drawings.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                    drawings.Tracer.To = Vector2.new(hrpPos.X, hrpPos.Y + height / 2)
-                    drawings.Tracer.Color = currentColor
-                    drawings.Tracer.Visible = true
-                else
-                    drawings.Tracer.Visible = false
-                end
-            else
-                drawings.Box.Visible = false
-                drawings.Name.Visible = false
-                drawings.Tracer.Visible = false
-            end
-        else
-            drawings.Box.Visible = false
-            drawings.Name.Visible = false
-            drawings.Tracer.Visible = false
-        end
-    end
-
-    -- 3. SPEED & JUMP
     local char = LocalPlayer.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    -- Aim
+    if Settings.Aim then
+        local target = GetClosestPlayer()
+        if target then Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position) end
+    end
+
+    -- Speed
     if hum then
-        if Settings.Speed.Enabled then hum.WalkSpeed = Settings.Speed.Value end
-        if Settings.Jump.Enabled then
-            hum.UseJumpPower = true
-            hum.JumpPower = Settings.Jump.Value
+        hum.WalkSpeed = Settings.Speed and Settings.SpeedValue or 16
+    end
+
+    -- ESP
+    HighlightFolder:ClearAllChildren()
+    if Settings.ESP then
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character then
+                local hl = Instance.new("Highlight")
+                hl.Adornee = p.Character
+                local isTeam = p.Team and LocalPlayer.Team and p.Team == LocalPlayer.Team
+                hl.FillColor = isTeam and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
+                hl.Parent = HighlightFolder
+            end
         end
     end
 
-    -- 4. FLY
-    if Settings.Fly.Enabled then
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            if not flyBV or not flyBV.Parent then StartFly() end
-
-            local moveVector = Vector3.new()
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveVector = moveVector + Camera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveVector = moveVector - Camera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveVector = moveVector - Camera.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveVector = moveVector + Camera.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveVector = moveVector + Vector3.new(0, 1, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveVector = moveVector - Vector3.new(0, 1, 0) end
-
-            if flyBV then flyBV.Velocity = moveVector * Settings.Fly.Speed end
-            if flyBG then flyBG.CFrame = Camera.CFrame end
+    -- Fly
+    if Settings.Fly and hrp then
+        if not flyBV or not flyBV.Parent then StartFly() end
+        if flyBV and flyBG then
+            flyBV.Velocity = Camera.CFrame.LookVector * Settings.FlySpeed
+            flyBG.CFrame = Camera.CFrame
         end
     else
         StopFly()
     end
-
-    -- 5. FULLBRIGHT
-    if Settings.FullBright.Enabled then
-        Lighting.Brightness = 2
-        Lighting.ClockTime = 14
-        Lighting.FogEnd = 100000
-        Lighting.GlobalShadows = false
-    end
-end)
-
-LocalPlayer.CharacterAdded:Connect(function()
-    Settings.Fly.Enabled = false
-    StopFly()
 end)
