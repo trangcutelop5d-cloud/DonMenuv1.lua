@@ -1,5 +1,5 @@
 -- =================================================================
--- ⚡ QUANTUM HUB - FF HEADSHOT AIM + CUSTOM CONFIG UI
+-- ⚡ QUANTUM HUB - FF HEADSHOT AIM + ESP + XG (NO AUTO FARM)
 -- =================================================================
 
 pcall(function()
@@ -25,14 +25,14 @@ end
 local function Notify(text)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
-            Title = "Quantum Hub - Config",
+            Title = "Quantum Hub",
             Text = text,
             Duration = 2.5
         })
     end)
 end
 
-Notify("Đã khởi chạy hệ thống tùy chỉnh thông số!")
+Notify("Đã khởi chạy: ESP, XG & FF Headshot Aim!")
 
 getgenv().QuantumSettings = {
     -- ESP
@@ -42,9 +42,8 @@ getgenv().QuantumSettings = {
     NameESP = true,
     DistanceESP = true,
     
-    -- XG (Xuyên tường)
+    -- XG (Xuyên tường - Noclip)
     Noclip = false,
-    AutoFarm = false,
     
     -- Free Fire Headshot Assist & Custom Values
     HeadshotAssist = false,
@@ -53,10 +52,6 @@ getgenv().QuantumSettings = {
     FOVRadius = 180,         -- Có thể chỉnh sửa
     Smoothness = 0.25,       -- Độ mượt kéo tâm đầu (Có thể chỉnh sửa)
     ShowFOV = true,
-    
-    -- Misc
-    SpeedHack = false,
-    SpeedVal = 50,
 }
 local Config = getgenv().QuantumSettings
 
@@ -129,7 +124,7 @@ local CoreGui = game:GetService("CoreGui")
 local TargetParent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or CoreGui
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "QuantumHub_Config"
+ScreenGui.Name = "QuantumHub_Clean"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = TargetParent
@@ -138,7 +133,7 @@ local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
 ToggleBtn.Position = UDim2.new(0, 15, 0.3, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-ToggleBtn.Text = "⚙️"
+ToggleBtn.Text = "⚡"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
 ToggleBtn.TextSize = 22
 ToggleBtn.Font = Enum.Font.GothamBold
@@ -173,7 +168,7 @@ local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, -15, 1, 0)
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "QUANTUM HUB • TÙY CHỈNH THÔNG SỐ"
+TitleLabel.Text = "QUANTUM HUB • ESP, XG & FF AIM"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 11
 TitleLabel.Font = Enum.Font.GothamBold
@@ -268,7 +263,6 @@ local function MakeToggle(parentTab, labelText, configKey, defaultVal)
     end)
 end
 
--- Hàm tạo mục tùy chỉnh thông số số học (Có nút Giảm [-] và Tăng [+])
 local function MakeSlider(parentTab, labelText, configKey, step, minVal, maxVal)
     local Container = Instance.new("Frame")
     Container.Size = UDim2.new(1, -4, 0, 42)
@@ -311,7 +305,6 @@ local function MakeSlider(parentTab, labelText, configKey, step, minVal, maxVal)
 
     MinusBtn.MouseButton1Click:Connect(function()
         Config[configKey] = math.clamp(Config[configKey] - step, minVal, maxVal)
-        -- Làm tròn số thập phân tránh bị lệch số học lua
         Config[configKey] = tonumber(string.format("%.2f", Config[configKey]))
         Label.Text = labelText .. ": " .. tostring(Config[configKey])
     end)
@@ -323,7 +316,7 @@ local function MakeSlider(parentTab, labelText, configKey, step, minVal, maxVal)
     end)
 end
 
--- Tạo các Tab chức năng và Bảng Chỉnh Thông Số
+-- Tạo các Tab chức năng
 local ESPCategory = MakeTab("👁️ ESP")
 MakeToggle(ESPCategory, "Bật/Tắt ESP", "ESPEnabled", true)
 MakeToggle(ESPCategory, "ESP Box", "BoxESP", true)
@@ -333,14 +326,12 @@ MakeToggle(ESPCategory, "ESP Distance", "DistanceESP", true)
 
 local XGCategory = MakeTab("🧱 XG (Xuyên Tường)")
 MakeToggle(XGCategory, "Noclip Xuyên Tường", "Noclip", false)
-MakeToggle(XGCategory, "Hỗ Trợ Auto Farm XG", "AutoFarm", false)
 
 local AimCategory = MakeTab("🎯 FF Headshot")
 MakeToggle(AimCategory, "Kéo Tâm Đầu (FF)", "HeadshotAssist", false)
 MakeToggle(AimCategory, "Dự Đoán Đường Bay", "Prediction", true)
 MakeToggle(AimCategory, "Hiển Thị Vòng FOV", "ShowFOV", true)
 
--- Tab Chỉnh Thông Số Mới
 local ConfigCategory = MakeTab("⚙️ Chỉnh Thông Số")
 MakeSlider(ConfigCategory, "Bán kính FOV", "FOVRadius", 10, 50, 400)
 MakeSlider(ConfigCategory, "Độ mượt (Smooth)", "Smoothness", 0.05, 0.05, 1.0)
@@ -353,7 +344,7 @@ if FirstTabContent then
 end
 
 local isFiring = false
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
+UserInputService.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         isFiring = true
     end
@@ -440,7 +431,7 @@ RunService.RenderStepped:Connect(function()
             end
         end
 
-        -- Free Fire Headshot Assist ứng dụng thông số Smoothness tùy chỉnh
+        -- Free Fire Headshot Assist
         if Config.HeadshotAssist and isFiring then
             local targetHead = nil
             local minDistance = Config.FOVRadius
@@ -473,9 +464,10 @@ RunService.RenderStepped:Connect(function()
     end)
 end)
 
+-- XG (Noclip Xuyên Tường)
 RunService.Stepped:Connect(function()
     pcall(function()
-        if Config.Noclip or Config.AutoFarm then
+        if Config.Noclip then
             local character = LocalPlayer.Character
             if character then
                 for _, part in ipairs(character:GetChildren()) do
@@ -488,4 +480,4 @@ RunService.Stepped:Connect(function()
     end)
 end)
 
-Notify("Đã tích hợp bảng chỉnh thông số thành công!")
+Notify("Sẵn sàng trải nghiệm!")
