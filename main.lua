@@ -1,12 +1,10 @@
 -- =================================================================
--- ⚡ QUANTUM HUB - FIXED STABLE EDITION (NO CRASH)
+-- ⚡ QUANTUM HUB - WITH SEARCH BAR EDITION
 -- =================================================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 
 local LocalPlayer = Players.LocalPlayer
@@ -25,7 +23,7 @@ local function SendNotification(title, text)
     end)
 end
 
-SendNotification("Quantum Hub", "Đang khởi động bản ổn định...")
+SendNotification("Quantum Hub", "Đã thêm thanh tìm kiếm thành công!")
 
 -- ==========================================
 -- ⚙️ CẤU HÌNH (SETTINGS)
@@ -33,25 +31,18 @@ SendNotification("Quantum Hub", "Đang khởi động bản ổn định...")
 getgenv().DonMenu = {
     AutoFarmLevel = false,
     BringMob = false,        
-    FastAttack = false,      
     FarmDistance = 7,
-    AutoEquip = true,
     
-    -- Aim & Prediction (Đã sửa lại tối ưu không crash)
     AimLock = false,
     Prediction = true,
     PredictionStrength = 0.15,
     FOV = 150,
     ShowFOV = true,
 
-    -- ESP
     ESP = false,
-    
-    -- Player
     Speed = false,
     SpeedValue = 50,
     Noclip = false,
-    AntiAFK = true
 }
 local Settings = getgenv().DonMenu
 
@@ -70,7 +61,7 @@ pcall(function()
 end)
 
 -- ==========================================
--- 📱 GIAO DIỆN GỌN NHẸ
+-- 📱 GIAO DIỆN & THANH TÌM KIẾM
 -- ==========================================
 local CoreGui = game:GetService("CoreGui")
 local ParentTarget = LocalPlayer:FindFirstChildOfClass("PlayerGui") or CoreGui
@@ -85,65 +76,96 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = ParentTarget
 
+-- Nút mở/đóng menu nổi
 local FloatingBtn = Instance.new("TextButton")
-FloatingBtn.Size = UDim2.new(0, 45, 0, 45)
-FloatingBtn.Position = UDim2.new(0, 15, 0.35, 0)
+FloatingBtn.Size = UDim2.new(0, 50, 0, 50)
+FloatingBtn.Position = UDim2.new(0, 20, 0.3, 0)
 FloatingBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 FloatingBtn.Text = "⚡"
 FloatingBtn.TextColor3 = Color3.fromRGB(140, 82, 255)
-FloatingBtn.TextSize = 20
+FloatingBtn.TextSize = 22
 FloatingBtn.Font = Enum.Font.GothamBold
 FloatingBtn.Active = true
 FloatingBtn.Draggable = true
 FloatingBtn.Parent = ScreenGui
 Instance.new("UICorner", FloatingBtn).CornerRadius = UDim.new(1, 0)
+local FloatStroke = Instance.new("UIStroke", FloatingBtn)
+FloatStroke.Color = Color3.fromRGB(140, 82, 255)
+FloatStroke.Thickness = 2
 
+-- Khung chính
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
+MainFrame.Size = UDim2.new(0, 520, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -260, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = Color3.fromRGB(140, 82, 255)
+MainStroke.Thickness = 1.5
 
+-- Thanh tiêu đề
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 35)
 TitleBar.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
 TitleBar.Parent = MainFrame
+Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 10)
 
 local TitleText = Instance.new("TextLabel")
-TitleText.Size = UDim2.new(1, -20, 1, 0)
+TitleText.Size = UDim2.new(0, 200, 1, 0)
 TitleText.Position = UDim2.new(0, 12, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "QUANTUM HUB • STABLE EDITION"
+TitleText.Text = "QUANTUM HUB"
 TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleText.TextSize = 12
 TitleText.Font = Enum.Font.GothamBold
 TitleText.Parent = TitleBar
 
+-- 🔍 THANH TÌM KIẾM (SEARCH BOX) NGAY TRÊN TIÊU ĐỀ
+local SearchBox = Instance.new("TextBox")
+SearchBox.Size = UDim2.new(0, 180, 0, 24)
+SearchBox.Position = UDim2.new(1, -190, 0.5, -12)
+SearchBox.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+SearchBox.PlaceholderText = "🔍 Tìm kiếm tính năng..."
+SearchBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
+SearchBox.Text = ""
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBox.TextSize = 10
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.Parent = TitleBar
+Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 4)
+
 FloatingBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
+-- Sidebar chọn tab
 local Sidebar = Instance.new("ScrollingFrame")
-Sidebar.Size = UDim2.new(0, 130, 1, -42)
-Sidebar.Position = UDim2.new(0, 6, 0, 38)
+Sidebar.Size = UDim2.new(0, 120, 1, -45)
+Sidebar.Position = UDim2.new(0, 6, 0, 40)
 Sidebar.BackgroundTransparency = 1
 Sidebar.ScrollBarThickness = 0
 Sidebar.Parent = MainFrame
 
+local SidebarLayout = Instance.new("UIListLayout", Sidebar)
+SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+SidebarLayout.Padding = UDim.new(0, 5)
+
+-- Vùng chứa nội dung tab
 local ContentHolder = Instance.new("Frame")
-ContentHolder.Size = UDim2.new(1, -142, 1, -42)
-ContentHolder.Position = UDim2.new(0, 138, 0, 38)
+ContentHolder.Size = UDim2.new(1, -134, 1, -45)
+ContentHolder.Position = UDim2.new(0, 130, 0, 40)
 ContentHolder.BackgroundTransparency = 1
 ContentHolder.Parent = MainFrame
 
 local Tabs = {}
 local FirstTab = nil
+local AllToggleButtons = {} -- Lưu trữ danh sách nút để lọc tìm kiếm
 
 local function CreateTab(tabName)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 32)
+    btn.Size = UDim2.new(1, 0, 0, 30)
     btn.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
     btn.Text = "  " .. tabName
     btn.TextColor3 = Color3.fromRGB(160, 160, 180)
@@ -165,6 +187,7 @@ local function CreateTab(tabName)
     layout.Padding = UDim.new(0, 6)
 
     btn.MouseButton1Click:Connect(function()
+        SearchBox.Text = "" -- Xóa tìm kiếm khi chuyển tab
         for _, t in pairs(Tabs) do
             t.Content.Visible = false
             t.Button.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
@@ -183,7 +206,7 @@ end
 local function CreateToggle(tab, name, key, default)
     if default ~= nil then Settings[key] = default end
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -4, 0, 34)
+    btn.Size = UDim2.new(1, -4, 0, 32)
     btn.BackgroundColor3 = Settings[key] and Color3.fromRGB(140, 82, 255) or Color3.fromRGB(24, 24, 34)
     btn.Text = "  " .. name .. (Settings[key] and ": ON" or ": OFF")
     btn.TextColor3 = Settings[key] and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 200)
@@ -193,6 +216,9 @@ local function CreateToggle(tab, name, key, default)
     btn.Parent = tab
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
+    -- Lưu lại tên gốc và nút để hỗ trợ tìm kiếm
+    table.insert(AllToggleButtons, {Button = btn, Name = name:lower(), TabContent = tab})
+
     btn.MouseButton1Click:Connect(function()
         Settings[key] = not Settings[key]
         btn.Text = "  " .. name .. (Settings[key] and ": ON" or ": OFF")
@@ -201,10 +227,10 @@ local function CreateToggle(tab, name, key, default)
     end)
 end
 
--- TẠO CÁC TAB
+-- TẠO CÁC TÍNH NĂNG
 local FarmTab = CreateTab("🌾 Auto Farm")
 CreateToggle(FarmTab, "Auto Farm Level", "AutoFarmLevel")
-CreateToggle(FarmTab, "Gom Quái", "BringMob")
+CreateToggle(FarmTab, "Gom Quái (Bring Mob)", "BringMob")
 
 local AimTab = CreateTab("🎯 Aim Lock")
 CreateToggle(AimTab, "Aim Lock Skill", "AimLock")
@@ -224,8 +250,37 @@ if FirstTab then
     FirstTab.Button.TextColor3 = Color3.fromRGB(255, 255, 255)
 end
 
+-- 🔍 LẮNG NGHE SỰ KIỆN TÌM KIẾM
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local query = SearchBox.Text:lower():gsub("^%s*(.-)%s*$", "%1")
+    
+    if query == "" then
+        -- Trả về trạng thái tab hiện tại nếu xóa chữ tìm kiếm
+        for _, t in ipairs(Tabs) do
+            if t.Content.Visible then
+                for _, item in ipairs(AllToggleButtons) do
+                    if item.TabContent == t.Content then
+                        item.Button.Visible = true
+                    end
+                end
+            end
+        end
+        return
+    end
+
+    -- Hiển thị tất cả nội dung đang khớp với từ khóa tìm kiếm
+    for _, item in ipairs(AllToggleButtons) do
+        if item.Name:find(query) then
+            item.Button.Visible = true
+            item.TabContent.Visible = true -- Tự động bật tab chứa kết quả
+        else
+            item.Button.Visible = false
+        end
+    end
+end)
+
 -- ==========================================
--- 🎯 XỬ LÝ AIM LOCK + PREDICTION AN TOÀN
+-- ⚙️ VÒNG LẶP CHẠY HỆ THỐNG
 -- ==========================================
 RunService.RenderStepped:Connect(function()
     pcall(function()
@@ -268,7 +323,6 @@ RunService.RenderStepped:Connect(function()
             end
         end
 
-        -- Speed & Noclip
         local char = LocalPlayer.Character
         local hum = char and char:FindFirstChildOfClass("Humanoid")
         if hum and Settings.Speed then
@@ -277,7 +331,6 @@ RunService.RenderStepped:Connect(function()
     end)
 end)
 
--- Noclip loop riêng biệt
 RunService.Stepped:Connect(function()
     pcall(function()
         if Settings.Noclip or Settings.AutoFarmLevel then
@@ -291,4 +344,4 @@ RunService.Stepped:Connect(function()
     end)
 end)
 
-SendNotification("Quantum Hub", "Đã nạp thành công bản ổn định!")
+SendNotification("Quantum Hub", "Đã sẵn sàng sử dụng!")
