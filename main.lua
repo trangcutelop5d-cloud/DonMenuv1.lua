@@ -1,5 +1,5 @@
 -- =================================================================
--- 🚀 DONMENU MASTER - REDZ HUD STYLE (FULL TÍNH NĂNG MỚI NHẤT)
+-- 🚀 DONMENU MASTER - REDZ HUB TRUE TAB SYSTEM (CHUẨN GỐC)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -16,6 +16,9 @@ local LocalPlayer = Players.LocalPlayer
 -- ==========================================
 getgenv().DonMenu = {
     Aim = false,
+    LegitAim = true,       
+    Smoothness = 0.15,     
+    TargetPart = "Head",   
     ShowFOV = true,
     FOV = 120,
     ESP = false,
@@ -32,7 +35,7 @@ getgenv().DonMenu = {
 }
 local Settings = getgenv().DonMenu
 
--- Khởi tạo vòng FOV an toàn
+-- Khởi tạo vòng FOV
 local FOVCircle = nil
 pcall(function()
     FOVCircle = Drawing.new("Circle")
@@ -45,17 +48,17 @@ pcall(function()
 end)
 
 -- ==========================================
--- 📱 1. GIAO DIỆN REDZ HUD (RỘNG & LƯỚI 2 CỘT)
+-- 📱 1. GIAO DIỆN REDZ HUB (SIDEBAR & TAB SYSTEM)
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DonMenuRedzHUD"
+ScreenGui.Name = "DonMenuRedzHubTabs"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 470, 0, 310)
-MainFrame.Position = UDim2.new(0.5, -235, 0.5, -155)
+MainFrame.Size = UDim2.new(0, 540, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -270, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -71,7 +74,7 @@ UIStroke.Color = Color3.fromRGB(45, 45, 45)
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
--- Thanh Tiêu Đề
+-- Thanh Tiêu Đề (TitleBar)
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 36)
 TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -91,9 +94,9 @@ TitleCover.Parent = TitleBar
 
 local TitleText = Instance.new("TextLabel")
 TitleText.Size = UDim2.new(1, -40, 1, 0)
-TitleText.Position = UDim2.new(0, 12, 0, 0)
+TitleText.Position = UDim2.new(0, 14, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "redz hud • DonMenu Master Edition"
+TitleText.Text = "redz hud • Tab System Edition"
 TitleText.TextColor3 = Color3.fromRGB(220, 220, 220)
 TitleText.TextSize = 13
 TitleText.Font = Enum.Font.GothamBold
@@ -115,7 +118,7 @@ local BtnCorner = Instance.new("UICorner")
 BtnCorner.CornerRadius = UDim.new(0, 6)
 BtnCorner.Parent = MinimizeBtn
 
--- Kéo Thả Menu (Mouse & Touch)
+-- Kéo Thả Menu
 local dragging, dragInput, dragStart, startPos
 TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -144,55 +147,132 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Khung Cuộn 2 Cột (UIGridLayout)
-local Container = Instance.new("ScrollingFrame")
-Container.Size = UDim2.new(1, -16, 1, -50)
-Container.Position = UDim2.new(0, 8, 0, 42)
-Container.BackgroundTransparency = 1
-Container.ScrollBarThickness = 3
-Container.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-Container.Parent = MainFrame
+-- Thanh Menu Trái (Sidebar Tabs)
+local Sidebar = Instance.new("ScrollingFrame")
+Sidebar.Size = UDim2.new(0, 135, 1, -44)
+Sidebar.Position = UDim2.new(0, 4, 0, 40)
+Sidebar.BackgroundTransparency = 1
+Sidebar.ScrollBarThickness = 0
+Sidebar.Parent = MainFrame
 
-local UIGrid = Instance.new("UIGridLayout")
-UIGrid.CellSize = UDim2.new(0, 220, 0, 36)
-UIGrid.CellPadding = UDim2.new(0, 8, 0, 8)
-UIGrid.Parent = Container
+local SidebarLayout = Instance.new("UIListLayout")
+SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+SidebarLayout.Padding = UDim.new(0, 6)
+SidebarLayout.Parent = Sidebar
+
+-- Khung Nội Dung Bên Phải (Content Area)
+local ContentHolder = Instance.new("Frame")
+ContentHolder.Size = UDim2.new(1, -145, 1, -44)
+ContentHolder.Position = UDim2.new(0, 143, 0, 40)
+ContentHolder.BackgroundTransparency = 1
+ContentHolder.Parent = MainFrame
 
 -- Logic Thu Nhỏ / Phóng To
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
     if isMinimized then
-        Container.Visible = false
-        MainFrame.Size = UDim2.new(0, 470, 0, 36)
+        Sidebar.Visible = false
+        ContentHolder.Visible = false
+        MainFrame.Size = UDim2.new(0, 540, 0, 36)
         MinimizeBtn.Text = "+"
     else
-        Container.Visible = true
-        MainFrame.Size = UDim2.new(0, 470, 0, 310)
+        Sidebar.Visible = true
+        ContentHolder.Visible = true
+        MainFrame.Size = UDim2.new(0, 540, 0, 320)
         MinimizeBtn.Text = "-"
     end
 end)
 
 -- ==========================================
--- 🔘 2. CÁC HÀM TẠO NÚT BẤM & INPUT
+-- 🗂️ HỆ THỐNG QUẢN LÝ TAB & UI COMPONENTS
 -- ==========================================
-local function CreateToggle(name, settingKey)
+local Tabs = {}
+local FirstTab = nil
+
+local function CreateTab(tabName)
+    -- Nút bấm trên Sidebar
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Size = UDim2.new(1, 0, 0, 34)
+    tabBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    tabBtn.Text = "  " .. tabName
+    tabBtn.TextColor3 = Color3.fromRGB(160, 160, 160)
+    tabBtn.Font = Enum.Font.GothamSemibold
+    tabBtn.TextSize = 12
+    tabBtn.TextXAlignment = Enum.TextXAlignment.Left
+    tabBtn.Parent = Sidebar
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = tabBtn
+
+    -- Khung chứa tính năng của Tab đó
+    local tabContent = Instance.new("ScrollingFrame")
+    tabContent.Size = UDim2.new(1, 0, 1, 0)
+    tabContent.BackgroundTransparency = 1
+    tabContent.ScrollBarThickness = 3
+    tabContent.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+    tabContent.Visible = false
+    tabContent.Parent = ContentHolder
+
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0, 8)
+    layout.Parent = tabContent
+
+    -- padding bottom cho đẹp
+    local pad = Instance.new("UIPadding")
+    pad.PaddingRight = UDim.new(0, 6)
+    pad.Parent = tabContent
+
+    -- Sự kiện chuyển Tab
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, t in pairs(Tabs) do
+            t.Content.Visible = false
+            t.Button.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+            t.Button.TextColor3 = Color3.fromRGB(160, 160, 160)
+        end
+        tabContent.Visible = true
+        tabBtn.BackgroundColor3 = Color3.fromRGB(45, 110, 60)
+        tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+
+    if not FirstTab then
+        FirstTab = {Button = tabBtn, Content = tabContent}
+    end
+
+    table.insert(Tabs, {Button = tabBtn, Content = tabContent})
+    return tabContent
+end
+
+-- Chọn Tab Mặc Định khi mở menu
+task.defer(function()
+    if FirstTab then
+        FirstTab.Content.Visible = true
+        FirstTab.Button.BackgroundColor3 = Color3.fromRGB(45, 110, 60)
+        FirstTab.Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+end)
+
+-- Hàm tạo các nút tính năng trong Tab
+local function CreateToggle(parentTab, name, settingKey, defaultState)
+    if defaultState ~= nil then Settings[settingKey] = defaultState end
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 220, 0, 36)
-    btn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-    btn.Text = "  " .. name .. ": OFF"
-    btn.TextColor3 = Color3.fromRGB(180, 180, 180)
+    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.BackgroundColor3 = Settings[settingKey] and Color3.fromRGB(45, 110, 60) or Color3.fromRGB(28, 28, 28)
+    btn.Text = "  " .. name .. (Settings[settingKey] and ": ON" or ": OFF")
+    btn.TextColor3 = Settings[settingKey] and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
     btn.Font = Enum.Font.GothamSemibold
     btn.TextSize = 12
     btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.Parent = Container
+    btn.Parent = parentTab
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(45, 45, 45)
+    stroke.Color = Settings[settingKey] and Color3.fromRGB(70, 180, 90) or Color3.fromRGB(45, 45, 45)
     stroke.Thickness = 1
     stroke.Parent = btn
 
@@ -212,11 +292,11 @@ local function CreateToggle(name, settingKey)
     end)
 end
 
-local function CreateTextBox(labelName, defaultVal, callback)
+local function CreateTextBox(parentTab, labelName, defaultVal, callback)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 220, 0, 36)
+    frame.Size = UDim2.new(1, 0, 0, 36)
     frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-    frame.Parent = Container
+    frame.Parent = parentTab
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 6)
@@ -263,44 +343,56 @@ local function CreateTextBox(labelName, defaultVal, callback)
 end
 
 -- ==========================================
--- 🛠️ 3. DÀN TÍNH NĂNG ĐẦY ĐỦ TRÊN MENU
--- ==========================================
-CreateToggle("🎯 Aim Lock", "Aim")
-CreateToggle("⭕ Hiện Vòng FOV", "ShowFOV")
-CreateTextBox("Cỡ FOV", Settings.FOV, function(v) Settings.FOV = v end)
-
-CreateToggle("👁️ ESP Highlight", "ESP")
-
-CreateToggle("⚡ Speed Hack", "Speed")
-CreateTextBox("Tốc độ Speed", Settings.SpeedValue, function(v) Settings.SpeedValue = v end)
-
-CreateToggle("🦘 Nhảy Cao", "Jump")
-CreateTextBox("Lực Nhảy", Settings.JumpValue, function(v) Settings.JumpValue = v end)
-
-CreateToggle("🕊️ Fly (Bay)", "Fly")
-CreateTextBox("Tốc độ Fly", Settings.FlySpeed, function(v) Settings.FlySpeed = v end)
-
-CreateToggle("👻 Noclip Xuyên Tường", "Noclip")
-CreateToggle("🚀 Nhảy Vô Hạn", "InfJump")
-CreateToggle("⚡ Click TP (Ctrl+Click)", "ClickTP")
-CreateToggle("💡 FullBright (Sáng Đêm)", "FullBright")
-
--- ==========================================
--- ⚙️ 4. LOGIC XỬ LÝ CHÍNH
+-- 🛠️ 2. TẠO CÁC TAB VÀ PHÂN CHIA TÍNH NĂNG
 -- ==========================================
 
--- Aim Lock Tìm Mục Tiêu Gần Nhất
+-- Tab 1: Combat (Aim Lock & FOV)
+local CombatTab = CreateTab("🎯 Combat")
+CreateToggle(CombatTab, "Aim Lock", "Aim")
+CreateToggle(CombatTab, "Aim Legit (Mượt)", "LegitAim", true)
+CreateTextBox(CombatTab, "Độ Mượt (0.1-0.5)", Settings.Smoothness, function(v) Settings.Smoothness = math.clamp(v, 0.01, 1) end)
+CreateToggle(CombatTab, "Hiện Vòng FOV", "ShowFOV")
+CreateTextBox(CombatTab, "Cỡ FOV", Settings.FOV, function(v) Settings.FOV = v end)
+
+-- Tab 2: Player (Speed, Jump, Noclip)
+local PlayerTab = CreateTab("⚡ Player")
+CreateToggle(PlayerTab, "Speed Hack", "Speed")
+CreateTextBox(PlayerTab, "Tốc độ Speed", Settings.SpeedValue, function(v) Settings.SpeedValue = v end)
+CreateToggle(PlayerTab, "Nhảy Cao", "Jump")
+CreateTextBox(PlayerTab, "Lực Nhảy", Settings.JumpValue, function(v) Settings.JumpValue = v end)
+CreateToggle(PlayerTab, "Nhảy Vô Hạn", "InfJump")
+CreateToggle(PlayerTab, "Noclip Xuyên Tường", "Noclip")
+
+-- Tab 3: Visual (ESP & FullBright)
+local VisualTab = CreateTab("👁️ Visual")
+CreateToggle(VisualTab, "ESP Highlight", "ESP")
+CreateToggle(VisualTab, "FullBright (Sáng Đêm)", "FullBright")
+
+-- Tab 4: Misc (Fly & Click TP)
+local MiscTab = CreateTab("🚀 Misc")
+CreateToggle(MiscTab, "Fly (Bay)", "Fly")
+CreateTextBox(MiscTab, "Tốc độ Fly", Settings.FlySpeed, function(v) Settings.FlySpeed = v end)
+CreateToggle(MiscTab, "Click TP (Ctrl+Click)", "ClickTP")
+
+
+-- ==========================================
+-- ⚙️ 3. LOGIC XỬ LÝ HỆ THỐNG
+-- ==========================================
+
 local function GetClosestPlayer()
     local target = nil
     local minDist = Settings.FOV
+    local partName = Settings.TargetPart or "Head"
+
     for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
-            local pos, onScreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild(partName) then
+            local targetPart = p.Character[partName]
+            local pos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
             if onScreen then
                 local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
                 if dist < minDist then
                     minDist = dist
-                    target = p.Character.Head
+                    target = targetPart
                 end
             end
         end
@@ -308,7 +400,6 @@ local function GetClosestPlayer()
     return target
 end
 
--- Nhảy vô hạn
 UserInputService.JumpRequest:Connect(function()
     if Settings.InfJump then
         local char = LocalPlayer.Character
@@ -317,7 +408,6 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- Click TP
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if Settings.ClickTP and input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -336,7 +426,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Fly
 local flyBV, flyBG
 local function StartFly()
     local char = LocalPlayer.Character
@@ -364,13 +453,9 @@ local function StopFly()
     if flyBG then flyBG:Destroy() flyBG = nil end
 end
 
--- ESP Folder
 local HighlightFolder = Instance.new("Folder", workspace)
 HighlightFolder.Name = "DonMenuESP"
 
--- ==========================================
--- 🔄 5. VÒNG LẶP RENDERSTEPPED & STEPPED
--- ==========================================
 RunService.Stepped:Connect(function()
     if Settings.Noclip then
         local char = LocalPlayer.Character
@@ -383,7 +468,6 @@ RunService.Stepped:Connect(function()
 end)
 
 RunService.RenderStepped:Connect(function()
-    -- Update FOV
     if FOVCircle then
         FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
         FOVCircle.Radius = Settings.FOV
@@ -394,13 +478,18 @@ RunService.RenderStepped:Connect(function()
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-    -- Aim
     if Settings.Aim then
         local target = GetClosestPlayer()
-        if target then Camera.CFrame = CFrame.new(Camera.CFrame.Position, target.Position) end
+        if target then
+            local targetCFrame = CFrame.new(Camera.CFrame.Position, target.Position)
+            if Settings.LegitAim then
+                Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Settings.Smoothness)
+            else
+                Camera.CFrame = targetCFrame
+            end
+        end
     end
 
-    -- Speed & Jump
     if hum then
         if Settings.Speed then hum.WalkSpeed = Settings.SpeedValue end
         if Settings.Jump then
@@ -409,7 +498,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- ESP
     HighlightFolder:ClearAllChildren()
     if Settings.ESP then
         for _, p in ipairs(Players:GetPlayers()) do
@@ -423,7 +511,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Fly
     if Settings.Fly and hrp then
         if not flyBV or not flyBV.Parent then StartFly() end
         if flyBV and flyBG then
@@ -434,7 +521,6 @@ RunService.RenderStepped:Connect(function()
         StopFly()
     end
 
-    -- FullBright
     if Settings.FullBright then
         Lighting.Brightness = 2
         Lighting.ClockTime = 14
