@@ -1,28 +1,33 @@
 -- =================================================================
--- 🚀 DONMENU MASTER - REDZ HUB (ESP NAME & DISTANCE EDITION)
+-- ⚡ DONMENU MASTER - QUANTUM UI (ULTIMATE FIX - BẬT LÀ LÊN)
 -- =================================================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
-local CoreGui = game:GetService("CoreGui")
 
 local Camera = workspace.CurrentCamera
+
+-- Đợi LocalPlayer load xong hẳn để tránh lỗi nil lúc mới vào game
 local LocalPlayer = Players.LocalPlayer
+while not LocalPlayer do
+    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+    LocalPlayer = Players.LocalPlayer
+end
 
 -- ==========================================
 -- ⚙️ BẢNG CẤU HÌNH TỔNG (SETTINGS)
 -- ==========================================
 getgenv().DonMenu = {
     Aim = false,
-    LegitAim = true,       -- Aim mượt tự nhiên
-    AimOnShoot = true,     -- Chỉ lia tâm khi giữ nút bắn/chạm màn hình
-    Smoothness = 0.08,     -- Độ mượt lia tâm
+    LegitAim = true,       
+    AimOnShoot = true,     
+    Smoothness = 0.08,     
     TargetPart = "Head",   
     ShowFOV = true,
     FOV = 120,
-    ESP = false,           -- Bật/tắt ESP Tên & Khoảng cách
+    ESP = false,           
     Speed = false,
     SpeedValue = 50,
     Jump = false,
@@ -36,87 +41,126 @@ getgenv().DonMenu = {
 }
 local Settings = getgenv().DonMenu
 
--- Khởi tạo vòng FOV
+-- Khởi tạo vòng FOV an toàn
 local FOVCircle = nil
 pcall(function()
-    FOVCircle = Drawing.new("Circle")
-    FOVCircle.Color = Color3.fromRGB(255, 255, 255)
-    FOVCircle.Thickness = 1.5
-    FOVCircle.NumSides = 60
-    FOVCircle.Radius = Settings.FOV
-    FOVCircle.Filled = false
-    FOVCircle.Visible = false
+    if Drawing then
+        FOVCircle = Drawing.new("Circle")
+        FOVCircle.Color = Color3.fromRGB(140, 82, 255)
+        FOVCircle.Thickness = 1.5
+        FOVCircle.NumSides = 60
+        FOVCircle.Radius = Settings.FOV
+        FOVCircle.Filled = false
+        FOVCircle.Visible = false
+    end
 end)
 
 -- ==========================================
--- 📱 1. GIAO DIỆN REDZ HUB (SIDEBAR & TAB SYSTEM)
+-- 📱 1. GIAO DIỆN STYLE QUANTUM HUB (Đa tầng bảo vệ)
 -- ==========================================
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DonMenuRedzHubTabs"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+pcall(function()
+    if gethui and gethui():FindFirstChild("DonMenuQuantumUI") then
+        gethui().DonMenuQuantumUI:Destroy()
+    end
+    if game:GetService("CoreGui"):FindFirstChild("DonMenuQuantumUI") then
+        game:GetService("CoreGui").DonMenuQuantumUI:Destroy()
+    end
+    local pGui = LocalPlayer:FindFirstChild("PlayerGui")
+    if pGui and pGui:FindFirstChild("DonMenuQuantumUI") then
+        pGui.DonMenuQuantumUI:Destroy()
+    end
+end)
 
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DonMenuQuantumUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+
+-- Tự động tìm nơi chứa GUI tối ưu nhất trên Mobile & PC
+local guiSuccess = pcall(function()
+    if gethui then
+        ScreenGui.Parent = gethui()
+    elseif syn and syn.protect_gui then
+        syn.protect_gui(ScreenGui)
+        ScreenGui.Parent = game:GetService("CoreGui")
+    else
+        ScreenGui.Parent = game:GetService("CoreGui")
+    end
+end)
+
+if not guiSuccess then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- Khung chính Quantum
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 540, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -270, 0.5, -160)
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+MainFrame.Size = UDim2.new(0, 560, 0, 330)
+MainFrame.Position = UDim2.new(0.5, -280, 0.5, -165)
+MainFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.CornerRadius = UDim.new(0, 12)
 UICorner.Parent = MainFrame
 
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(45, 45, 45)
+UIStroke.Color = Color3.fromRGB(140, 82, 255)
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
 -- Thanh Tiêu Đề
 local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1, 0, 0, 36)
-TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+TitleBar.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
 TitleBar.BorderSizePixel = 0
 TitleBar.Parent = MainFrame
 
 local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 10)
+TitleCorner.CornerRadius = UDim.new(0, 12)
 TitleCorner.Parent = TitleBar
 
 local TitleCover = Instance.new("Frame")
-TitleCover.Size = UDim2.new(1, 0, 0, 6)
-TitleCover.Position = UDim2.new(0, 0, 1, -6)
-TitleCover.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TitleCover.Size = UDim2.new(1, 0, 0, 10)
+TitleCover.Position = UDim2.new(0, 0, 1, -10)
+TitleCover.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
 TitleCover.BorderSizePixel = 0
 TitleCover.Parent = TitleBar
 
 local TitleText = Instance.new("TextLabel")
-TitleText.Size = UDim2.new(1, -40, 1, 0)
-TitleText.Position = UDim2.new(0, 14, 0, 0)
+TitleText.Size = UDim2.new(1, -50, 1, 0)
+TitleText.Position = UDim2.new(0, 16, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "redz hud • ESP Name & Distance Edition"
-TitleText.TextColor3 = Color3.fromRGB(220, 220, 220)
-TitleText.TextSize = 13
+TitleText.Text = "QUANTUM HUB • DonMenu (Fixed)"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextSize = 14
 TitleText.Font = Enum.Font.GothamBold
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = TitleBar
 
+local AccentLine = Instance.new("Frame")
+AccentLine.Size = UDim2.new(1, 0, 0, 2)
+AccentLine.Position = UDim2.new(0, 0, 1, -2)
+AccentLine.BackgroundColor3 = Color3.fromRGB(140, 82, 255)
+AccentLine.BorderSizePixel = 0
+AccentLine.Parent = TitleBar
+
 -- Nút Thu Nhỏ (-)
 local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0, 26, 0, 26)
-MinimizeBtn.Position = UDim2.new(1, -34, 0, 5)
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MinimizeBtn.Size = UDim2.new(0, 28, 0, 28)
+MinimizeBtn.Position = UDim2.new(1, -36, 0, 6)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
 MinimizeBtn.Text = "-"
-MinimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+MinimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
 MinimizeBtn.Font = Enum.Font.GothamBold
 MinimizeBtn.TextSize = 16
 MinimizeBtn.Parent = TitleBar
 
 local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 6)
+BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = MinimizeBtn
 
 -- Kéo Thả Menu
@@ -150,8 +194,8 @@ end)
 
 -- Sidebar Tabs
 local Sidebar = Instance.new("ScrollingFrame")
-Sidebar.Size = UDim2.new(0, 135, 1, -44)
-Sidebar.Position = UDim2.new(0, 4, 0, 40)
+Sidebar.Size = UDim2.new(0, 140, 1, -48)
+Sidebar.Position = UDim2.new(0, 6, 0, 44)
 Sidebar.BackgroundTransparency = 1
 Sidebar.ScrollBarThickness = 0
 Sidebar.Parent = MainFrame
@@ -163,54 +207,54 @@ SidebarLayout.Parent = Sidebar
 
 -- Content Holder
 local ContentHolder = Instance.new("Frame")
-ContentHolder.Size = UDim2.new(1, -145, 1, -44)
-ContentHolder.Position = UDim2.new(0, 143, 0, 40)
+ContentHolder.Size = UDim2.new(1, -156, 1, -48)
+ContentHolder.Position = UDim2.new(0, 150, 0, 44)
 ContentHolder.BackgroundTransparency = 1
 ContentHolder.Parent = MainFrame
 
--- Thu Nhỏ
+-- Thu Nhỏ / Phóng To Menu
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
     if isMinimized then
         Sidebar.Visible = false
         ContentHolder.Visible = false
-        MainFrame.Size = UDim2.new(0, 540, 0, 36)
+        MainFrame.Size = UDim2.new(0, 560, 0, 40)
         MinimizeBtn.Text = "+"
     else
         Sidebar.Visible = true
         ContentHolder.Visible = true
-        MainFrame.Size = UDim2.new(0, 540, 0, 320)
+        MainFrame.Size = UDim2.new(0, 560, 0, 330)
         MinimizeBtn.Text = "-"
     end
 end)
 
 -- ==========================================
--- 🗂️ HỆ THỐNG QUẢN LÝ TAB & UI COMPONENTS
+-- 🗂️ HỆ THỐNG TAB & UI COMPONENTS
 -- ==========================================
 local Tabs = {}
 local FirstTab = nil
 
 local function CreateTab(tabName)
     local tabBtn = Instance.new("TextButton")
-    tabBtn.Size = UDim2.new(1, 0, 0, 34)
-    tabBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+    tabBtn.Size = UDim2.new(1, 0, 0, 36)
+    tabBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
     tabBtn.Text = "  " .. tabName
-    tabBtn.TextColor3 = Color3.fromRGB(160, 160, 160)
+    tabBtn.TextColor3 = Color3.fromRGB(160, 160, 180)
     tabBtn.Font = Enum.Font.GothamSemibold
     tabBtn.TextSize = 12
     tabBtn.TextXAlignment = Enum.TextXAlignment.Left
     tabBtn.Parent = Sidebar
 
     local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = tabBtn
 
     local tabContent = Instance.new("ScrollingFrame")
     tabContent.Size = UDim2.new(1, 0, 1, 0)
     tabContent.BackgroundTransparency = 1
     tabContent.ScrollBarThickness = 3
-    tabContent.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+    tabContent.ScrollBarImageColor3 = Color3.fromRGB(140, 82, 255)
     tabContent.Visible = false
     tabContent.Parent = ContentHolder
 
@@ -226,11 +270,11 @@ local function CreateTab(tabName)
     tabBtn.MouseButton1Click:Connect(function()
         for _, t in pairs(Tabs) do
             t.Content.Visible = false
-            t.Button.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
-            t.Button.TextColor3 = Color3.fromRGB(160, 160, 160)
+            t.Button.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
+            t.Button.TextColor3 = Color3.fromRGB(160, 160, 180)
         end
         tabContent.Visible = true
-        tabBtn.BackgroundColor3 = Color3.fromRGB(45, 110, 60)
+        tabBtn.BackgroundColor3 = Color3.fromRGB(140, 82, 255)
         tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
 
@@ -245,7 +289,7 @@ end
 task.defer(function()
     if FirstTab then
         FirstTab.Content.Visible = true
-        FirstTab.Button.BackgroundColor3 = Color3.fromRGB(45, 110, 60)
+        FirstTab.Button.BackgroundColor3 = Color3.fromRGB(140, 82, 255)
         FirstTab.Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     end
 end)
@@ -253,21 +297,21 @@ end)
 local function CreateToggle(parentTab, name, settingKey, defaultState)
     if defaultState ~= nil then Settings[settingKey] = defaultState end
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 36)
-    btn.BackgroundColor3 = Settings[settingKey] and Color3.fromRGB(45, 110, 60) or Color3.fromRGB(28, 28, 28)
+    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.BackgroundColor3 = Settings[settingKey] and Color3.fromRGB(140, 82, 255) or Color3.fromRGB(24, 24, 34)
     btn.Text = "  " .. name .. (Settings[settingKey] and ": ON" or ": OFF")
-    btn.TextColor3 = Settings[settingKey] and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
+    btn.TextColor3 = Settings[settingKey] and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 200)
     btn.Font = Enum.Font.GothamSemibold
     btn.TextSize = 12
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.Parent = parentTab
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = btn
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Settings[settingKey] and Color3.fromRGB(70, 180, 90) or Color3.fromRGB(45, 45, 45)
+    stroke.Color = Settings[settingKey] and Color3.fromRGB(180, 130, 255) or Color3.fromRGB(40, 40, 55)
     stroke.Thickness = 1
     stroke.Parent = btn
 
@@ -276,47 +320,47 @@ local function CreateToggle(parentTab, name, settingKey, defaultState)
         if Settings[settingKey] then
             btn.Text = "  " .. name .. ": ON"
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.BackgroundColor3 = Color3.fromRGB(45, 110, 60)
-            stroke.Color = Color3.fromRGB(70, 180, 90)
+            btn.BackgroundColor3 = Color3.fromRGB(140, 82, 255)
+            stroke.Color = Color3.fromRGB(180, 130, 255)
         else
             btn.Text = "  " .. name .. ": OFF"
-            btn.TextColor3 = Color3.fromRGB(180, 180, 180)
-            btn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-            stroke.Color = Color3.fromRGB(45, 45, 45)
+            btn.TextColor3 = Color3.fromRGB(180, 180, 200)
+            btn.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
+            stroke.Color = Color3.fromRGB(40, 40, 55)
         end
     end)
 end
 
 local function CreateTextBox(parentTab, labelName, defaultVal, callback)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 0, 36)
-    frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    frame.Size = UDim2.new(1, 0, 0, 38)
+    frame.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
     frame.Parent = parentTab
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = frame
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(45, 45, 45)
+    stroke.Color = Color3.fromRGB(40, 40, 55)
     stroke.Thickness = 1
     stroke.Parent = frame
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.65, 0, 1, 0)
-    label.Position = UDim2.new(0, 8, 0, 0)
+    label.Position = UDim2.new(0, 10, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = labelName
-    label.TextColor3 = Color3.fromRGB(200, 200, 200)
+    label.TextColor3 = Color3.fromRGB(200, 200, 220)
     label.TextSize = 12
     label.Font = Enum.Font.GothamSemibold
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = frame
 
     local box = Instance.new("TextBox")
-    box.Size = UDim2.new(0.3, 0, 0.7, 0)
-    box.Position = UDim2.new(0.68, 0, 0.15, 0)
-    box.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    box.Size = UDim2.new(0.28, 0, 0.68, 0)
+    box.Position = UDim2.new(0.69, 0, 0.16, 0)
+    box.BackgroundColor3 = Color3.fromRGB(34, 34, 48)
     box.Text = tostring(defaultVal)
     box.TextColor3 = Color3.fromRGB(255, 255, 255)
     box.Font = Enum.Font.GothamBold
@@ -324,7 +368,7 @@ local function CreateTextBox(parentTab, labelName, defaultVal, callback)
     box.Parent = frame
 
     local boxCorner = Instance.new("UICorner")
-    boxCorner.CornerRadius = UDim.new(0, 4)
+    boxCorner.CornerRadius = UDim.new(0, 6)
     boxCorner.Parent = box
 
     box.FocusLost:Connect(function()
@@ -340,8 +384,6 @@ end
 -- ==========================================
 -- 🛠️ 2. TẠO CÁC TAB & TÍNH NĂNG
 -- ==========================================
-
--- Tab 1: Combat
 local CombatTab = CreateTab("🎯 Combat")
 CreateToggle(CombatTab, "Aim Lock", "Aim")
 CreateToggle(CombatTab, "Bắn Mới Aim", "AimOnShoot", true)
@@ -350,7 +392,6 @@ CreateTextBox(CombatTab, "Độ Mượt (0.01-0.2)", Settings.Smoothness, functi
 CreateToggle(CombatTab, "Hiện Vòng FOV", "ShowFOV")
 CreateTextBox(CombatTab, "Cỡ FOV", Settings.FOV, function(v) Settings.FOV = v end)
 
--- Tab 2: Player
 local PlayerTab = CreateTab("⚡ Player")
 CreateToggle(PlayerTab, "Speed Hack", "Speed")
 CreateTextBox(PlayerTab, "Tốc độ Speed", Settings.SpeedValue, function(v) Settings.SpeedValue = v end)
@@ -359,12 +400,10 @@ CreateTextBox(PlayerTab, "Lực Nhảy", Settings.JumpValue, function(v) Setting
 CreateToggle(PlayerTab, "Nhảy Vô Hạn", "InfJump")
 CreateToggle(PlayerTab, "Noclip Xuyên Tường", "Noclip")
 
--- Tab 3: Visual
 local VisualTab = CreateTab("👁️ Visual")
 CreateToggle(VisualTab, "ESP Tên & Khoảng Cách", "ESP")
 CreateToggle(VisualTab, "FullBright (Sáng Đêm)", "FullBright")
 
--- Tab 4: Misc
 local MiscTab = CreateTab("🚀 Misc")
 CreateToggle(MiscTab, "Fly (Bay)", "Fly")
 CreateTextBox(MiscTab, "Tốc độ Fly", Settings.FlySpeed, function(v) Settings.FlySpeed = v end)
@@ -373,7 +412,6 @@ CreateToggle(MiscTab, "Click TP (Ctrl+Click)", "ClickTP")
 -- ==========================================
 -- ⚙️ 3. LOGIC XỬ LÝ HỆ THỐNG
 -- ==========================================
-
 local isShooting = false
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -486,7 +524,6 @@ RunService.RenderStepped:Connect(function()
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-    -- Aim Lock & Tự Nhiên
     if Settings.Aim then
         local canAim = not Settings.AimOnShoot or isShooting
         if canAim then
@@ -510,7 +547,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 
-    -- Xử lý ESP (Tên, Khoảng cách, Địch màu đỏ, Đồng đội màu xanh)
     ESPFolder:ClearAllChildren()
     if Settings.ESP then
         local localHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -522,33 +558,10 @@ RunService.RenderStepped:Connect(function()
 
                 if pHrp and pHead then
                     local isTeam = p.Team and LocalPlayer.Team and p.Team == LocalPlayer.Team
-                    -- Kịch bản màu: Địch đỏ, Đồng đội xanh
                     local espColor = isTeam and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
 
-                    -- 1. Highlight
                     local hl = Instance.new("Highlight")
                     hl.Adornee = pChar
                     hl.FillColor = espColor
                     hl.OutlineColor = espColor
-                    hl.FillTransparency = 0.5
-                    hl.Parent = ESPFolder
-
-                    -- 2. Tính khoảng cách
-                    local distance = localHrp and math.floor((localHrp.Position - pHrp.Position).Magnitude) or 0
-
-                    -- 3. Text Tên & Khoảng cách (BillboardGui)
-                    local bg = Instance.new("BillboardGui")
-                    bg.Name = "ESPText"
-                    bg.Adornee = pHead
-                    bg.Size = UDim2.new(0, 120, 0, 50)
-                    bg.StudsOffset = Vector3.new(0, 2.5, 0)
-                    bg.AlwaysOnTop = true
-                    bg.Parent = ESPFolder
-
-                    local txt = Instance.new("TextLabel")
-                    txt.Size = UDim2.new(1, 0, 1, 0)
-                    txt.BackgroundTransparency = 1
-                    txt.Text = string.format("%s\n[%dm]", p.Name, distance)
-                    txt.TextColor3 = espColor
-                    txt.TextSize = 12
-                    txt.Font = Enum.Fon
+                    hl.FillT
