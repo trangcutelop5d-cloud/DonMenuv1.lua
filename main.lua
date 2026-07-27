@@ -1,16 +1,16 @@
 -- =================================================================
--- ⚡ DONMENU MASTER - QUANTUM UI (ULTIMATE FIX - BẬT LÀ LÊN)
+-- ⚡ DONMENU MASTER - QUANTUM UI (AUTO PVP + AUTO FARM EDITION)
 -- =================================================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local Camera = workspace.CurrentCamera
-
--- Đợi LocalPlayer load xong hẳn để tránh lỗi nil lúc mới vào game
 local LocalPlayer = Players.LocalPlayer
+
 while not LocalPlayer do
     Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
     LocalPlayer = Players.LocalPlayer
@@ -20,6 +20,7 @@ end
 -- ⚙️ BẢNG CẤU HÌNH TỔNG (SETTINGS)
 -- ==========================================
 getgenv().DonMenu = {
+    -- Combat & Aim
     Aim = false,
     LegitAim = true,       
     AimOnShoot = true,     
@@ -27,6 +28,21 @@ getgenv().DonMenu = {
     TargetPart = "Head",   
     ShowFOV = true,
     FOV = 120,
+
+    -- Auto PvP & Skill Aim
+    SkillAim = false,
+    Prediction = 0.15,
+    AutoPvP = false,
+    AutoDodge = false,
+    AutoCombo = false,
+    ComboDelay = 0.35,
+
+    -- Auto Farm
+    AutoFarmMob = false,
+    FarmDistance = 7,
+    BringMobs = false,
+
+    -- Player & Visual
     ESP = false,           
     Speed = false,
     SpeedValue = 50,
@@ -37,7 +53,8 @@ getgenv().DonMenu = {
     FlySpeed = 50,
     Noclip = false,
     ClickTP = false,
-    FullBright = false
+    FullBright = false,
+    FixLag = false
 }
 local Settings = getgenv().DonMenu
 
@@ -56,15 +73,9 @@ pcall(function()
 end)
 
 -- ==========================================
--- 📱 1. GIAO DIỆN STYLE QUANTUM HUB (Đa tầng bảo vệ)
+-- 📱 1. GIAO DIỆN STYLE QUANTUM HUB
 -- ==========================================
 pcall(function()
-    if gethui and gethui():FindFirstChild("DonMenuQuantumUI") then
-        gethui().DonMenuQuantumUI:Destroy()
-    end
-    if game:GetService("CoreGui"):FindFirstChild("DonMenuQuantumUI") then
-        game:GetService("CoreGui").DonMenuQuantumUI:Destroy()
-    end
     local pGui = LocalPlayer:FindFirstChild("PlayerGui")
     if pGui and pGui:FindFirstChild("DonMenuQuantumUI") then
         pGui.DonMenuQuantumUI:Destroy()
@@ -75,32 +86,39 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DonMenuQuantumUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Tự động tìm nơi chứa GUI tối ưu nhất trên Mobile & PC
-local guiSuccess = pcall(function()
-    if gethui then
-        ScreenGui.Parent = gethui()
-    elseif syn and syn.protect_gui then
-        syn.protect_gui(ScreenGui)
-        ScreenGui.Parent = game:GetService("CoreGui")
-    else
-        ScreenGui.Parent = game:GetService("CoreGui")
-    end
-end)
+local FloatingBtn = Instance.new("TextButton")
+FloatingBtn.Name = "FloatingBtn"
+FloatingBtn.Size = UDim2.new(0, 45, 0, 45)
+FloatingBtn.Position = UDim2.new(0, 20, 0.4, 0)
+FloatingBtn.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
+FloatingBtn.Text = "⚡"
+FloatingBtn.TextColor3 = Color3.fromRGB(140, 82, 255)
+FloatingBtn.TextSize = 20
+FloatingBtn.Font = Enum.Font.GothamBold
+FloatingBtn.Active = true
+FloatingBtn.Draggable = true
+FloatingBtn.Parent = ScreenGui
 
-if not guiSuccess then
-    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-end
+local FloatCorner = Instance.new("UICorner")
+FloatCorner.CornerRadius = UDim.new(1, 0)
+FloatCorner.Parent = FloatingBtn
 
--- Khung chính Quantum
+local FloatStroke = Instance.new("UIStroke")
+FloatStroke.Color = Color3.fromRGB(140, 82, 255)
+FloatStroke.Thickness = 2
+FloatStroke.Parent = FloatingBtn
+
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 560, 0, 330)
-MainFrame.Position = UDim2.new(0.5, -280, 0.5, -165)
+MainFrame.Size = UDim2.new(0, 520, 0, 310)
+MainFrame.Position = UDim2.new(0.5, -260, 0.5, -155)
 MainFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.ClipsDescendants = true
+MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -112,7 +130,6 @@ UIStroke.Color = Color3.fromRGB(140, 82, 255)
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
--- Thanh Tiêu Đề
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 40)
 TitleBar.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
@@ -134,7 +151,7 @@ local TitleText = Instance.new("TextLabel")
 TitleText.Size = UDim2.new(1, -50, 1, 0)
 TitleText.Position = UDim2.new(0, 16, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "QUANTUM HUB • DonMenu (Fixed)"
+TitleText.Text = "QUANTUM HUB • Auto Farm Edition"
 TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleText.TextSize = 14
 TitleText.Font = Enum.Font.GothamBold
@@ -148,22 +165,10 @@ AccentLine.BackgroundColor3 = Color3.fromRGB(140, 82, 255)
 AccentLine.BorderSizePixel = 0
 AccentLine.Parent = TitleBar
 
--- Nút Thu Nhỏ (-)
-local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0, 28, 0, 28)
-MinimizeBtn.Position = UDim2.new(1, -36, 0, 6)
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
-MinimizeBtn.Text = "-"
-MinimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
-MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.TextSize = 16
-MinimizeBtn.Parent = TitleBar
+FloatingBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
 
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = MinimizeBtn
-
--- Kéo Thả Menu
 local dragging, dragInput, dragStart, startPos
 TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -192,9 +197,8 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Sidebar Tabs
 local Sidebar = Instance.new("ScrollingFrame")
-Sidebar.Size = UDim2.new(0, 140, 1, -48)
+Sidebar.Size = UDim2.new(0, 130, 1, -48)
 Sidebar.Position = UDim2.new(0, 6, 0, 44)
 Sidebar.BackgroundTransparency = 1
 Sidebar.ScrollBarThickness = 0
@@ -205,29 +209,11 @@ SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
 SidebarLayout.Padding = UDim.new(0, 6)
 SidebarLayout.Parent = Sidebar
 
--- Content Holder
 local ContentHolder = Instance.new("Frame")
-ContentHolder.Size = UDim2.new(1, -156, 1, -48)
-ContentHolder.Position = UDim2.new(0, 150, 0, 44)
+ContentHolder.Size = UDim2.new(1, -144, 1, -48)
+ContentHolder.Position = UDim2.new(0, 140, 0, 44)
 ContentHolder.BackgroundTransparency = 1
 ContentHolder.Parent = MainFrame
-
--- Thu Nhỏ / Phóng To Menu
-local isMinimized = false
-MinimizeBtn.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    if isMinimized then
-        Sidebar.Visible = false
-        ContentHolder.Visible = false
-        MainFrame.Size = UDim2.new(0, 560, 0, 40)
-        MinimizeBtn.Text = "+"
-    else
-        Sidebar.Visible = true
-        ContentHolder.Visible = true
-        MainFrame.Size = UDim2.new(0, 560, 0, 330)
-        MinimizeBtn.Text = "-"
-    end
-end)
 
 -- ==========================================
 -- 🗂️ HỆ THỐNG TAB & UI COMPONENTS
@@ -237,12 +223,12 @@ local FirstTab = nil
 
 local function CreateTab(tabName)
     local tabBtn = Instance.new("TextButton")
-    tabBtn.Size = UDim2.new(1, 0, 0, 36)
+    tabBtn.Size = UDim2.new(1, 0, 0, 34)
     tabBtn.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
     tabBtn.Text = "  " .. tabName
     tabBtn.TextColor3 = Color3.fromRGB(160, 160, 180)
     tabBtn.Font = Enum.Font.GothamSemibold
-    tabBtn.TextSize = 12
+    tabBtn.TextSize = 11
     tabBtn.TextXAlignment = Enum.TextXAlignment.Left
     tabBtn.Parent = Sidebar
 
@@ -294,15 +280,15 @@ task.defer(function()
     end
 end)
 
-local function CreateToggle(parentTab, name, settingKey, defaultState)
+local function CreateToggle(parentTab, name, settingKey, defaultState, callback)
     if defaultState ~= nil then Settings[settingKey] = defaultState end
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.Size = UDim2.new(1, 0, 0, 36)
     btn.BackgroundColor3 = Settings[settingKey] and Color3.fromRGB(140, 82, 255) or Color3.fromRGB(24, 24, 34)
     btn.Text = "  " .. name .. (Settings[settingKey] and ": ON" or ": OFF")
     btn.TextColor3 = Settings[settingKey] and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 200)
     btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 12
+    btn.TextSize = 11
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.Parent = parentTab
 
@@ -328,12 +314,13 @@ local function CreateToggle(parentTab, name, settingKey, defaultState)
             btn.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
             stroke.Color = Color3.fromRGB(40, 40, 55)
         end
+        if callback then callback(Settings[settingKey]) end
     end)
 end
 
 local function CreateTextBox(parentTab, labelName, defaultVal, callback)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 0, 38)
+    frame.Size = UDim2.new(1, 0, 0, 36)
     frame.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
     frame.Parent = parentTab
 
@@ -347,24 +334,24 @@ local function CreateTextBox(parentTab, labelName, defaultVal, callback)
     stroke.Parent = frame
 
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.65, 0, 1, 0)
+    label.Size = UDim2.new(0.6, 0, 1, 0)
     label.Position = UDim2.new(0, 10, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = labelName
     label.TextColor3 = Color3.fromRGB(200, 200, 220)
-    label.TextSize = 12
+    label.TextSize = 11
     label.Font = Enum.Font.GothamSemibold
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = frame
 
     local box = Instance.new("TextBox")
-    box.Size = UDim2.new(0.28, 0, 0.68, 0)
-    box.Position = UDim2.new(0.69, 0, 0.16, 0)
+    box.Size = UDim2.new(0.32, 0, 0.68, 0)
+    box.Position = UDim2.new(0.65, 0, 0.16, 0)
     box.BackgroundColor3 = Color3.fromRGB(34, 34, 48)
     box.Text = tostring(defaultVal)
     box.TextColor3 = Color3.fromRGB(255, 255, 255)
     box.Font = Enum.Font.GothamBold
-    box.TextSize = 12
+    box.TextSize = 11
     box.Parent = frame
 
     local boxCorner = Instance.new("UICorner")
@@ -373,17 +360,27 @@ local function CreateTextBox(parentTab, labelName, defaultVal, callback)
 
     box.FocusLost:Connect(function()
         local num = tonumber(box.Text)
-        if num then
-            callback(num)
-        else
-            box.Text = tostring(defaultVal)
-        end
+        if num then callback(num) else box.Text = tostring(defaultVal) end
     end)
 end
 
 -- ==========================================
--- 🛠️ 2. TẠO CÁC TAB & TÍNH NĂNG
+-- 🛠️ 2. TẠO CÁC TAB TÍNH NĂNG
 -- ==========================================
+-- TAB AUTO FARM MỚI
+local FarmTab = CreateTab("🌾 Auto Farm")
+CreateToggle(FarmTab, "Auto Farm Quái (Universal)", "AutoFarmMob")
+CreateTextBox(FarmTab, "Khoảng Cách Trụ Trên Đầu", Settings.FarmDistance, function(v) Settings.FarmDistance = math.clamp(v, 3, 20) end)
+CreateToggle(FarmTab, "Tụ Quái Lại Gần (Bring Mobs)", "BringMobs")
+
+local PvPTab = CreateTab("⚔️ Auto PvP")
+CreateToggle(PvPTab, "Aim Skill (Đón Đầu Di Chuyển)", "SkillAim")
+CreateTextBox(PvPTab, "Thời Gian Dự Đoán (0.1-0.5)", Settings.Prediction, function(v) Settings.Prediction = math.clamp(v, 0.05, 1) end)
+CreateToggle(PvPTab, "Tự Động Áp Sát & Đánh", "AutoPvP")
+CreateToggle(PvPTab, "Né Chiêu (Auto Dodge)", "AutoDodge")
+CreateToggle(PvPTab, "Tự Động Combo Skill (Z,X,C,V)", "AutoCombo")
+CreateTextBox(PvPTab, "Delay Skill (giây)", Settings.ComboDelay, function(v) Settings.ComboDelay = math.clamp(v, 0.1, 2) end)
+
 local CombatTab = CreateTab("🎯 Combat")
 CreateToggle(CombatTab, "Aim Lock", "Aim")
 CreateToggle(CombatTab, "Bắn Mới Aim", "AimOnShoot", true)
@@ -404,13 +401,102 @@ local VisualTab = CreateTab("👁️ Visual")
 CreateToggle(VisualTab, "ESP Tên & Khoảng Cách", "ESP")
 CreateToggle(VisualTab, "FullBright (Sáng Đêm)", "FullBright")
 
+local function ApplyFixLag()
+    pcall(function()
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.Reflectance = 0
+            elseif v:IsA("Decal") or v:IsA("Texture") then
+                v.Transparency = 1
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+                v.Enabled = false
+            end
+        end
+        Lighting.GlobalShadows = false
+        Lighting.Brightness = 1
+    end)
+end
+CreateToggle(VisualTab, "Fix Lag (Tối ưu FPS)", "FixLag", false, function(state) if state then ApplyFixLag() end end)
+
 local MiscTab = CreateTab("🚀 Misc")
 CreateToggle(MiscTab, "Fly (Bay)", "Fly")
 CreateTextBox(MiscTab, "Tốc độ Fly", Settings.FlySpeed, function(v) Settings.FlySpeed = v end)
 CreateToggle(MiscTab, "Click TP (Ctrl+Click)", "ClickTP")
 
 -- ==========================================
--- ⚙️ 3. LOGIC XỬ LÝ HỆ THỐNG
+-- ⚙️ 3. LOGIC HỆ THỐNG AUTO FARM QUÁI
+-- ==========================================
+local function GetClosestMob()
+    local closestMob = nil
+    local minDist = math.huge
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    if not hrp then return nil end
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Humanoid") and obj.Parent and obj.Parent ~= char then
+            local enemyChar = obj.Parent
+            local isPlayer = Players:GetPlayerFromCharacter(enemyChar)
+            
+            if not isPlayer and obj.Health > 0 then
+                local eHrp = enemyChar:FindFirstChild("HumanoidRootPart") or enemyChar:FindFirstChild("Torso")
+                if eHrp then
+                    local dist = (hrp.Position - eHrp.Position).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        closestMob = enemyChar
+                    end
+                end
+            end
+        end
+    end
+    return closestMob
+end
+
+-- VÒNG LẶP AUTO FARM QUÁI
+task.spawn(function()
+    while task.wait(0.05) do
+        if Settings.AutoFarmMob then
+            local mob = GetClosestMob()
+            if mob then
+                local mHrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Torso")
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+                if mHrp and hrp then
+                    -- Bay và giữ khoảng cách an toàn ngay trên đầu quái
+                    hrp.CFrame = CFrame.new(mHrp.Position + Vector3.new(0, Settings.FarmDistance or 7, 0), mHrp.Position)
+
+                    -- Gom quái xung quanh lại gần nếu bật Bring Mobs
+                    if Settings.BringMobs then
+                        for _, obj in ipairs(workspace:GetDescendants()) do
+                            if obj:IsA("Humanoid") and obj.Parent and obj.Parent ~= char and obj.Parent ~= mob then
+                                local otherChar = obj.Parent
+                                if not Players:GetPlayerFromCharacter(otherChar) and obj.Health > 0 then
+                                    local oHrp = otherChar:FindFirstChild("HumanoidRootPart")
+                                    if oHrp and (oHrp.Position - mHrp.Position).Magnitude < 35 then
+                                        oHrp.CFrame = mHrp.CFrame
+                                        oHrp.CanCollide = false
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    -- Tự động bấm chuột đánh quái
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+                    task.wait(0.02)
+                    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+                end
+            end
+        end
+    end
+end)
+
+-- ==========================================
+-- ⚙️ LOGIC CÁC TÍNH NĂNG KHÁC
 -- ==========================================
 local isShooting = false
 
@@ -450,118 +536,4 @@ local function GetClosestPlayer()
 
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild(partName) then
-            local targetPart = p.Character[partName]
-            local pos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
-            if onScreen then
-                local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                if dist < minDist then
-                    minDist = dist
-                    target = targetPart
-                end
-            end
-        end
-    end
-    return target
-end
-
-UserInputService.JumpRequest:Connect(function()
-    if Settings.InfJump then
-        local char = LocalPlayer.Character
-        local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-    end
-end)
-
-local flyBV, flyBG
-local function StartFly()
-    local char = LocalPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hrp and hum then
-        hum.PlatformStand = true
-        flyBV = Instance.new("BodyVelocity")
-        flyBV.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-        flyBV.Velocity = Vector3.new(0,0,0)
-        flyBV.Parent = hrp
-
-        flyBG = Instance.new("BodyGyro")
-        flyBG.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-        flyBG.CFrame = hrp.CFrame
-        flyBG.Parent = hrp
-    end
-end
-
-local function StopFly()
-    local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.PlatformStand = false end
-    if flyBV then flyBV:Destroy() flyBV = nil end
-    if flyBG then flyBG:Destroy() flyBG = nil end
-end
-
-local ESPFolder = Instance.new("Folder", workspace)
-ESPFolder.Name = "DonMenuESP"
-
-RunService.Stepped:Connect(function()
-    if Settings.Noclip then
-        local char = LocalPlayer.Character
-        if char then
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then part.CanCollide = false end
-            end
-        end
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if FOVCircle then
-        FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-        FOVCircle.Radius = Settings.FOV
-        FOVCircle.Visible = Settings.Aim and Settings.ShowFOV
-    end
-
-    local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-
-    if Settings.Aim then
-        local canAim = not Settings.AimOnShoot or isShooting
-        if canAim then
-            local target = GetClosestPlayer()
-            if target then
-                local targetCFrame = CFrame.new(Camera.CFrame.Position, target.Position)
-                if Settings.LegitAim then
-                    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Settings.Smoothness)
-                else
-                    Camera.CFrame = targetCFrame
-                end
-            end
-        end
-    end
-
-    if hum then
-        if Settings.Speed then hum.WalkSpeed = Settings.SpeedValue end
-        if Settings.Jump then
-            hum.UseJumpPower = true
-            hum.JumpPower = Settings.JumpValue
-        end
-    end
-
-    ESPFolder:ClearAllChildren()
-    if Settings.ESP then
-        local localHrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character then
-                local pChar = p.Character
-                local pHrp = pChar:FindFirstChild("HumanoidRootPart")
-                local pHead = pChar:FindFirstChild("Head")
-
-                if pHrp and pHead then
-                    local isTeam = p.Team and LocalPlayer.Team and p.Team == LocalPlayer.Team
-                    local espColor = isTeam and Color3.fromRGB(50, 255, 50) or Color3.fromRGB(255, 50, 50)
-
-                    local hl = Instance.new("Highlight")
-                    hl.Adornee = pChar
-                    hl.FillColor = espColor
-                    hl.OutlineColor = espColor
-                    hl.FillT
+            local tar
