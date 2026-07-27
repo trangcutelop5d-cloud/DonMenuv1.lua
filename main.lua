@@ -1,5 +1,5 @@
 -- =================================================================
--- ⚡ QUANTUM HUB - LIGHT GREEN EDITION (ESP + XG + FF AIM)
+-- ⚡ QUANTUM HUB - LIGHT GREEN V2 (FIXED UI & STABLE ESP)
 -- =================================================================
 
 pcall(function()
@@ -25,28 +25,23 @@ end
 local function Notify(text)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
-            Title = "Quantum Hub - Light Green",
+            Title = "Quantum Hub V2",
             Text = text,
             Duration = 2.5
         })
     end)
 end
 
-Notify("Đã khởi chạy phiên bản Xanh Lá Nhạt!")
+Notify("Đã khởi chạy Quantum Hub phiên bản mới!")
 
 getgenv().QuantumSettings = {
-    -- ESP & Visuals
     ESPEnabled = true,
-    BoxESP = true,         -- Khung viền 2D
-    HealthBar = true,      -- Thanh máu dọc
-    LineESP = true,        -- Đường kẻ dóng
-    NameESP = true,        -- Tên người chơi
-    DistanceESP = true,    -- Khoảng cách mét
-    
-    -- XG (Xuyên tường)
+    BoxESP = true,
+    HealthBar = true,
+    LineESP = true,
+    NameESP = true,
+    DistanceESP = true,
     Noclip = false,
-    
-    -- Free Fire Headshot Assist
     HeadshotAssist = false,
     Prediction = true,
     PredictionValue = 0.12,
@@ -56,11 +51,9 @@ getgenv().QuantumSettings = {
 }
 local Config = getgenv().QuantumSettings
 
--- Tông màu Xanh Lá Nhạt chủ đạo (Light Green / Mint)
 local ThemeColor = Color3.fromRGB(120, 255, 140)
 local ThemeColorDark = Color3.fromRGB(10, 20, 12)
 
--- Kho lưu trữ Drawing ESP
 local ESPStorage = {}
 
 local function RemoveESP(player)
@@ -120,7 +113,6 @@ Players.PlayerRemoving:Connect(function(player)
     RemoveESP(player)
 end)
 
--- Vòng tròn FOV
 local FOVCircle = nil
 pcall(function()
     if Drawing and Drawing.new then
@@ -134,23 +126,21 @@ pcall(function()
     end
 end)
 
--- Giao diện UI Điều Khiển
-local CoreGui = game:GetService("CoreGui")
-local TargetParent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or CoreGui
-
+-- Gán UI trực tiếp vào PlayerGui để chắc chắn hiển thị lên màn hình
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "QuantumHub_LightGreen"
+ScreenGui.Name = "QuantumHub_Fixed"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = TargetParent
+ScreenGui.Parent = PlayerGui
 
 local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 48, 0, 48)
-ToggleBtn.Position = UDim2.new(0, 15, 0.3, 0)
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Position = UDim2.new(0, 20, 0.3, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(12, 18, 14)
 ToggleBtn.Text = "🟢"
 ToggleBtn.TextColor3 = ThemeColor
-ToggleBtn.TextSize = 20
+ToggleBtn.TextSize = 22
 ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.Active = true
 ToggleBtn.Draggable = true
@@ -183,7 +173,7 @@ local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(1, -15, 1, 0)
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "QUANTUM HUB • LIGHT GREEN EDITION"
+TitleLabel.Text = "QUANTUM HUB • LIGHT GREEN V2"
 TitleLabel.TextColor3 = ThemeColor
 TitleLabel.TextSize = 11
 TitleLabel.Font = Enum.Font.GothamBold
@@ -331,7 +321,6 @@ local function MakeSlider(parentTab, labelText, configKey, step, minVal, maxVal)
     end)
 end
 
--- Tạo các Tab giao diện
 local ESPCategory = MakeTab("👁️ ESP Xanh Lá")
 MakeToggle(ESPCategory, "Bật/Tắt Tổng ESP", "ESPEnabled", true)
 MakeToggle(ESPCategory, "ESP Khung (Box)", "BoxESP", true)
@@ -372,7 +361,6 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Vòng lặp Render xử lý ESP & Aim
 RunService.RenderStepped:Connect(function()
     pcall(function()
         Camera = workspace.CurrentCamera
@@ -406,7 +394,6 @@ RunService.RenderStepped:Connect(function()
                             local boxX = rootPos.X - boxWidth / 2
                             local boxY = topPos.Y
                             
-                            -- 1. Vẽ Box
                             if Config.BoxESP then
                                 esp.Box.Size = Vector2.new(boxWidth, boxHeight)
                                 esp.Box.Position = Vector2.new(boxX, boxY)
@@ -415,7 +402,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.Box.Visible = false
                             end
                             
-                            -- 2. Vẽ Thanh Máu (Health Bar)
                             if Config.HealthBar then
                                 local healthPercent = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
                                 local barHeight = boxHeight * healthPercent
@@ -432,7 +418,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.HealthBar.Visible = false
                             end
                             
-                            -- 3. Đường kẻ dóng (Line)
                             if Config.LineESP then
                                 esp.Line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
                                 esp.Line.To = Vector2.new(rootPos.X, bottomPos.Y)
@@ -441,7 +426,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.Line.Visible = false
                             end
                             
-                            -- 4. Tên người chơi
                             if Config.NameESP then
                                 esp.Name.Text = p.Name
                                 esp.Name.Position = Vector2.new(rootPos.X, boxY - 16)
@@ -450,7 +434,6 @@ RunService.RenderStepped:Connect(function()
                                 esp.Name.Visible = false
                             end
                             
-                            -- 5. Khoảng cách (Distance)
                             if Config.DistanceESP and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                                 local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
                                 esp.Info.Text = dist .. "m"
@@ -471,7 +454,6 @@ RunService.RenderStepped:Connect(function()
             end
         end
 
-        -- Hỗ trợ Kéo Tâm Đầu (FF)
         if Config.HeadshotAssist and isFiring then
             local targetHead = nil
             local minDistance = Config.FOVRadius
@@ -504,8 +486,19 @@ RunService.RenderStepped:Connect(function()
     end)
 end)
 
--- XG (Noclip Xuyên Tường)
 RunService.Stepped:Connect(function()
     pcall(function()
         if Config.Noclip then
-            local character = LocalPlayer.Charact
+            local character = LocalPlayer.Character
+            if character then
+                for _, part in ipairs(character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+Notify("Đã sửa lỗi hiển thị và load thành công!")
