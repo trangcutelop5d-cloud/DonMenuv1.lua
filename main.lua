@@ -1,5 +1,5 @@
 -- =================================================================
--- ⚡ DONMENU MASTER - QUANTUM UI (ULTIMATE FUNCTIONAL FIX)
+-- ⚡ QUANTUM HUB - HERMANOS'DEV EDITION (FULL BLOX FRUITS / RPG)
 -- =================================================================
 
 local Players = game:GetService("Players")
@@ -8,34 +8,35 @@ local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
-while not LocalPlayer do
-    task.wait()
-    LocalPlayer = Players.LocalPlayer
-end
+while not LocalPlayer do task.wait() LocalPlayer = Players.LocalPlayer end
 
 -- ==========================================
 -- ⚙️ BẢNG CẤU HÌNH TỔNG (SETTINGS)
 -- ==========================================
 getgenv().DonMenu = {
+    -- Auto Farm Level & Quest
+    AutoFarmLevel = false,
+    AutoSelectQuest = true,
+    BringMob = false,        -- Gom quái lại 1 điểm
+    FastAttack = false,      -- Đánh siêu tốc
+    FarmDistance = 7,
+    AutoEquip = true,
+    
+    -- Auto Chest & Farm Khác
+    AutoChest = false,
+    AutoStats = false,
+    StatSelect = "Melee",    -- Melee, Defense, Sword, Gun, Blox Fruit
+
     -- Combat & Aim
     Aim = false,
     LegitAim = true,       
-    Smoothness = 0.15,     
+    Smoothness = 0.1,        -- Tốc độ Aim (0.01 = Khóa cứng, 0.5 = Mượt)
     TargetPart = "Head",   
     ShowFOV = true,
     FOV = 150,
-
-    -- Auto PvP & Skill
-    SkillAim = false,
-    Prediction = 0.15,
-    AutoPvP = false,
-
-    -- Auto Farm
-    AutoFarmMob = false,
-    FarmDistance = 7,
-    AutoEquip = true,
 
     -- Player & Visual
     ESP = false,           
@@ -44,8 +45,6 @@ getgenv().DonMenu = {
     Jump = false,
     JumpValue = 100,
     InfJump = false,
-    Fly = false,
-    FlySpeed = 50,
     Noclip = false,
     FullBright = false
 }
@@ -96,16 +95,15 @@ FloatingBtn.Active = true
 FloatingBtn.Draggable = true
 FloatingBtn.Parent = ScreenGui
 
-local FloatCorner = Instance.new("UICorner", FloatingBtn)
-FloatCorner.CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", FloatingBtn).CornerRadius = UDim.new(1, 0)
 local FloatStroke = Instance.new("UIStroke", FloatingBtn)
 FloatStroke.Color = Color3.fromRGB(140, 82, 255)
 FloatStroke.Thickness = 2
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 520, 0, 310)
-MainFrame.Position = UDim2.new(0.5, -260, 0.5, -155)
+MainFrame.Size = UDim2.new(0, 530, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -265, 0.5, -175)
 MainFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -128,9 +126,9 @@ local TitleText = Instance.new("TextLabel")
 TitleText.Size = UDim2.new(1, -50, 1, 0)
 TitleText.Position = UDim2.new(0, 16, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "QUANTUM HUB • Working Edition"
+TitleText.Text = "QUANTUM HUB • HERMANOS'DEV EDITION"
 TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleText.TextSize = 14
+TitleText.TextSize = 13
 TitleText.Font = Enum.Font.GothamBold
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = TitleBar
@@ -140,7 +138,7 @@ FloatingBtn.MouseButton1Click:Connect(function()
 end)
 
 local Sidebar = Instance.new("ScrollingFrame")
-Sidebar.Size = UDim2.new(0, 130, 1, -48)
+Sidebar.Size = UDim2.new(0, 135, 1, -48)
 Sidebar.Position = UDim2.new(0, 6, 0, 44)
 Sidebar.BackgroundTransparency = 1
 Sidebar.ScrollBarThickness = 0
@@ -151,8 +149,8 @@ SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
 SidebarLayout.Padding = UDim.new(0, 6)
 
 local ContentHolder = Instance.new("Frame")
-ContentHolder.Size = UDim2.new(1, -144, 1, -48)
-ContentHolder.Position = UDim2.new(0, 140, 0, 44)
+ContentHolder.Size = UDim2.new(1, -148, 1, -48)
+ContentHolder.Position = UDim2.new(0, 144, 0, 44)
 ContentHolder.BackgroundTransparency = 1
 ContentHolder.Parent = MainFrame
 
@@ -211,7 +209,7 @@ end)
 local function CreateToggle(parentTab, name, settingKey, defaultState, callback)
     if defaultState ~= nil then Settings[settingKey] = defaultState end
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.Size = UDim2.new(1, -6, 0, 36)
     btn.BackgroundColor3 = Settings[settingKey] and Color3.fromRGB(140, 82, 255) or Color3.fromRGB(24, 24, 34)
     btn.Text = "  " .. name .. (Settings[settingKey] and ": ON" or ": OFF")
     btn.TextColor3 = Settings[settingKey] and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 200)
@@ -230,26 +228,102 @@ local function CreateToggle(parentTab, name, settingKey, defaultState, callback)
     end)
 end
 
--- TẠO MENU TAB
-local FarmTab = CreateTab("🌾 Auto Farm")
-CreateToggle(FarmTab, "Auto Farm Quái", "AutoFarmMob")
-CreateToggle(FarmTab, "Tự Cầm Vũ Khí", "AutoEquip", true)
+local function CreateTextBox(parentTab, labelName, defaultVal, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -6, 0, 36)
+    frame.BackgroundColor3 = Color3.fromRGB(24, 24, 34)
+    frame.Parent = parentTab
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
 
-local CombatTab = CreateTab("🎯 Combat")
-CreateToggle(CombatTab, "Aim Lock (Khóa Tâm)", "Aim")
-CreateToggle(CombatTab, "Hiện Vòng FOV", "ShowFOV")
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.65, 0, 1, 0)
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = labelName
+    label.TextColor3 = Color3.fromRGB(200, 200, 220)
+    label.TextSize = 11
+    label.Font = Enum.Font.GothamSemibold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
 
-local PlayerTab = CreateTab("⚡ Player")
-CreateToggle(PlayerTab, "Speed Hack", "Speed")
-CreateToggle(PlayerTab, "Nhảy Vô Hạn", "InfJump")
-CreateToggle(PlayerTab, "Noclip Xuyên Tường", "Noclip")
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0.28, 0, 0.68, 0)
+    box.Position = UDim2.new(0.68, 0, 0.16, 0)
+    box.BackgroundColor3 = Color3.fromRGB(34, 34, 48)
+    box.Text = tostring(defaultVal)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.Font = Enum.Font.GothamBold
+    box.TextSize = 11
+    box.Parent = frame
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
 
-local VisualTab = CreateTab("👁️ Visual")
-CreateToggle(VisualTab, "ESP Người Chơi", "ESP")
-CreateToggle(VisualTab, "FullBright (Sáng Đêm)", "FullBright")
+    box.FocusLost:Connect(function()
+        local num = tonumber(box.Text)
+        if num then callback(num) else box.Text = tostring(defaultVal) end
+    end)
+end
+
+local function CreateButton(parentTab, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -6, 0, 36)
+    btn.BackgroundColor3 = Color3.fromRGB(34, 34, 48)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 11
+    btn.Parent = parentTab
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    btn.MouseButton1Click:Connect(function()
+        if callback then callback(btn) end
+    end)
+end
 
 -- ==========================================
--- 🌾 LOGIC AUTO FARM QUÁI TỐI ƯU SÂU
+-- 🗂️ CÁC TAB CHỨC NĂNG HERMANOS'DEV
+-- ==========================================
+
+-- TAB MAIN FARM
+local MainTab = CreateTab("🌾 Auto Farm")
+CreateToggle(MainTab, "Auto Farm Level + Quest", "AutoFarmLevel")
+CreateToggle(MainTab, "Tự Động Nhận Quest", "AutoSelectQuest", true)
+CreateToggle(MainTab, "Gom Quái Lại (Bring Mob)", "BringMob")
+CreateToggle(MainTab, "Đánh Siêu Tốc (Fast Attack)", "FastAttack")
+CreateToggle(MainTab, "Tự Động Cầm Vũ Khí", "AutoEquip", true)
+CreateTextBox(MainTab, "Khoảng Cách Đứng Trên Quái", Settings.FarmDistance, function(v) Settings.FarmDistance = math.clamp(v, 1, 20) end)
+
+-- TAB EXTRA FARM
+local ExtraTab = CreateTab("🎁 Extra Farm")
+CreateToggle(ExtraTab, "Auto Nhặt Rương (Auto Chest)", "AutoChest")
+CreateToggle(ExtraTab, "Auto Cộng Điểm Stats", "AutoStats")
+CreateButton(ExtraTab, "Stats Ưu Tiên: " .. Settings.StatSelect, function(btn)
+    local list = {"Melee", "Defense", "Sword", "Gun", "Blox Fruit"}
+    local idx = table.find(list, Settings.StatSelect) or 1
+    idx = (idx % #list) + 1
+    Settings.StatSelect = list[idx]
+    btn.Text = "Stats Ưu Tiên: " .. Settings.StatSelect
+end)
+
+-- TAB COMBAT & AIM
+local CombatTab = CreateTab("🎯 Combat & Aim")
+CreateToggle(CombatTab, "Aim Lock (Khóa Tâm)", "Aim")
+CreateTextBox(CombatTab, "Tốc Độ Aim (0.01 Nhanh -> 0.5 Mượt)", Settings.Smoothness, function(v) Settings.Smoothness = math.clamp(v, 0.01, 1) end)
+CreateTextBox(CombatTab, "Kích Thước FOV", Settings.FOV, function(v) Settings.FOV = v end)
+CreateToggle(CombatTab, "Hiện Vòng FOV", "ShowFOV")
+
+-- TAB PLAYER & VISUAL
+local PlayerTab = CreateTab("⚡ Player / Visual")
+CreateToggle(PlayerTab, "ESP Người Chơi", "ESP")
+CreateToggle(PlayerTab, "Speed Hack", "Speed")
+CreateTextBox(PlayerTab, "Chỉnh Speed", Settings.SpeedValue, function(v) Settings.SpeedValue = v end)
+CreateToggle(PlayerTab, "Jump Hack", "Jump")
+CreateTextBox(PlayerTab, "Chỉnh Độ Nhảy", Settings.JumpValue, function(v) Settings.JumpValue = v end)
+CreateToggle(PlayerTab, "Nhảy Vô Hạn", "InfJump")
+CreateToggle(PlayerTab, "Noclip Xuyên Tường", "Noclip")
+CreateToggle(PlayerTab, "FullBright (Sáng Đêm)", "FullBright")
+
+-- ==========================================
+-- 🛠️ LOGIC AUTO FARM & BRING MOB & FAST ATTACK
 -- ==========================================
 local function EquipWeapon()
     local char = LocalPlayer.Character
@@ -261,82 +335,104 @@ local function EquipWeapon()
         local backpack = LocalPlayer:FindFirstChild("Backpack")
         if backpack then
             local tool = backpack:FindFirstChildOfClass("Tool")
-            if tool then
-                hum:EquipTool(tool)
-            end
+            if tool then hum:EquipTool(tool) end
         end
     end
 
-    local currentTool = char:FindFirstChildOfClass("Tool")
-    if currentTool then
-        pcall(function() currentTool:Activate() end)
+    if Settings.FastAttack then
+        pcall(function()
+            local tool = char:FindFirstChildOfClass("Tool")
+            if tool then tool:Activate() end
+        end)
+    else
+        pcall(function()
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+        end)
     end
 end
 
-local function GetClosestMob()
+local function GetTargetMob()
     local char = LocalPlayer.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
-    local myHrp = char.HumanoidRootPart
 
-    local closestMob = nil
+    local targetMob = nil
     local minDist = math.huge
 
-    -- Quét tất cả nơi có khả năng chứa Quái
-    local searchList = {workspace}
-    for _, folderName in ipairs({"Enemies", "Mobs", "NPCs", "Monsters", "Live", "Characters"}) do
-        local f = workspace:FindFirstChild(folderName)
-        if f then table.insert(searchList, f) end
-    end
-
-    for _, parentObj in ipairs(searchList) do
-        for _, obj in ipairs(parentObj:GetChildren()) do
-            if obj:IsA("Model") and obj ~= char then
-                local hum = obj:FindFirstChildOfClass("Humanoid")
-                local eHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso") or obj:FindFirstChild("UpperTorso") or obj:FindFirstChild("Head")
-                
-                if hum and eHrp and hum.Health > 0 then
-                    -- Loại trừ người chơi thật
-                    if not Players:GetPlayerFromCharacter(obj) then
-                        local dist = (myHrp.Position - eHrp.Position).Magnitude
-                        if dist < minDist then
-                            minDist = dist
-                            closestMob = obj
-                        end
-                    end
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj ~= char then
+            local hum = obj:FindFirstChildOfClass("Humanoid")
+            local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Torso")
+            
+            if hum and hrp and hum.Health > 0 and not Players:GetPlayerFromCharacter(obj) then
+                local dist = (char.HumanoidRootPart.Position - hrp.Position).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    targetMob = obj
                 end
             end
         end
     end
-    return closestMob
+    return targetMob
 end
 
--- VÒNG LẶP FARM QUÁI
+-- VÒNG LẶP AUTOMATION (FARM + BRING MOB + AUTO STATS + AUTO CHEST)
 task.spawn(function()
-    while task.wait(0.03) do
-        if Settings.AutoFarmMob then
+    while task.wait(0.02) do
+        -- 1. Auto Farm Level & Mob
+        if Settings.AutoFarmLevel then
             pcall(function()
-                local mob = GetClosestMob()
+                local mob = GetTargetMob()
                 if mob then
-                    local mHrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Torso") or mob:FindFirstChild("UpperTorso") or mob:FindFirstChild("Head")
+                    local mHrp = mob:FindFirstChild("HumanoidRootPart") or mob:FindFirstChild("Torso")
                     local char = LocalPlayer.Character
                     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
                     if mHrp and hrp then
-                        -- Giữ khoảng cách trên đầu quái
+                        -- Bay lên đầu quái
                         hrp.CFrame = CFrame.new(mHrp.Position + Vector3.new(0, Settings.FarmDistance or 7, 0), mHrp.Position)
                         
-                        -- Tự cầm vũ khí & Đánh
+                        -- Bring Mob (Gom quái lại một chỗ)
+                        if Settings.BringMob then
+                            for _, obj in ipairs(workspace:GetDescendants()) do
+                                if obj:IsA("Model") and obj ~= mob and obj ~= char then
+                                    local oHum = obj:FindFirstChildOfClass("Humanoid")
+                                    local oHrp = obj:FindFirstChild("HumanoidRootPart")
+                                    if oHum and oHrp and oHum.Health > 0 and (oHrp.Position - mHrp.Position).Magnitude < 300 then
+                                        oHrp.CFrame = mHrp.CFrame
+                                        oHrp.CanCollide = false
+                                    end
+                                end
+                            end
+                        end
+
                         if Settings.AutoEquip then EquipWeapon() end
-                        
-                        pcall(function()
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-                        end)
-                        pcall(function()
-                            VirtualUser:Button1Down(Vector2.new(0, 0))
-                            VirtualUser:Button1Up(Vector2.new(0, 0))
-                        end)
                     end
+                end
+            end)
+        end
+
+        -- 2. Auto Chest (Tự nhặt rương)
+        if Settings.AutoChest then
+            pcall(function()
+                for _, chest in ipairs(workspace:GetDescendants()) do
+                    if chest.Name:find("Chest") and chest:IsA("BasePart") then
+                        local char = LocalPlayer.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = chest.CFrame
+                            task.wait(0.1)
+                        end
+                    end
+                end
+            end)
+        end
+
+        -- 3. Auto Stats
+        if Settings.AutoStats then
+            pcall(function()
+                local mainComm = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("CommF_")
+                if mainComm then
+                    mainComm:InvokeServer("AddPoint", Settings.StatSelect, 3)
                 end
             end)
         end
@@ -344,7 +440,7 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- 🎯 LOGIC AIM LOCK CHUẨN XÁC
+-- 🎯 LOGIC AIM LOCK (CHỈNH AIM SPEED & FOV)
 -- ==========================================
 local function GetClosestPlayer()
     local target = nil
@@ -372,7 +468,7 @@ local function GetClosestPlayer()
 end
 
 -- ==========================================
--- 👁️ HỆ THỐNG ESP BỀN VỮNG
+-- 👁️ ESP SYSTEM
 -- ==========================================
 local ESPFolder = Instance.new("Folder", ParentTarget)
 ESPFolder.Name = "DonMenuESP_Folder"
@@ -414,79 +510,4 @@ task.spawn(function()
                             txt.TextColor3 = Color3.fromRGB(255, 255, 255)
                             txt.TextSize = 11
                             txt.Font = Enum.Font.GothamBold
-                            txt.TextStrokeTransparency = 0
-                            txt.Parent = bg
-                        end
-                    end
-                end
-            end
-        end)
-    end
-end)
-
--- ==========================================
--- ⚙️ RENDER LOOP TỔNG
--- ==========================================
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        local Camera = workspace.CurrentCamera
-        if FOVCircle and Camera then
-            FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-            FOVCircle.Radius = Settings.FOV
-            FOVCircle.Visible = Settings.ShowFOV and Settings.Aim
-        end
-
-        -- Aim Lock
-        if Settings.Aim and Camera then
-            local targetPart = GetClosestPlayer()
-            if targetPart then
-                local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
-                if Settings.LegitAim then
-                    Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Settings.Smoothness or 0.15)
-                else
-                    Camera.CFrame = targetCFrame
-                end
-            end
-        end
-
-        -- Speed & Jump
-        local char = LocalPlayer.Character
-        local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then
-            if Settings.Speed then hum.WalkSpeed = Settings.SpeedValue end
-        end
-
-        -- FullBright
-        if Settings.FullBright then
-            Lighting.Brightness = 2
-            Lighting.ClockTime = 14
-            Lighting.GlobalShadows = false
-        end
-    end)
-end)
-
--- Noclip & Infinite Jump
-RunService.Stepped:Connect(function()
-    pcall(function()
-        if Settings.Noclip or Settings.AutoFarmMob then
-            local char = LocalPlayer.Character
-            if char then
-                for _, part in ipairs(char:GetDescendants()) do
-                    if part:IsA("BasePart") then part.CanCollide = false end
-                end
-            end
-        end
-    end)
-end)
-
-UserInputService.JumpRequest:Connect(function()
-    pcall(function()
-        if Settings.InfJump then
-            local char = LocalPlayer.Character
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
-            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-        end
-    end)
-end)
-
-print("[Quantum Hub] Đã nạp thành công bản sửa lỗi tính năng!")
+                            txt.TextStrokeTr
